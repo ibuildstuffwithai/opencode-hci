@@ -1,324 +1,222 @@
-import { useStore, FileNode, DiffChange } from "./store";
+import { useStore } from "./store";
+import { SCENARIO_DATA, ActivityStep } from "./scenarios";
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-const MOCK_FILES: FileNode[] = [
-  {
-    name: "src",
-    path: "src",
-    type: "folder",
-    children: [
-      {
-        name: "App.tsx",
-        path: "src/App.tsx",
-        type: "file",
-        content: `import React from 'react';
-import { Header } from './components/Header';
-import { Dashboard } from './components/Dashboard';
-import { useTheme } from './hooks/useTheme';
-
-export default function App() {
-  const { theme, toggleTheme } = useTheme();
-
-  return (
-    <div className={\`app \${theme}\`}>
-      <Header onToggleTheme={toggleTheme} />
-      <main className="container mx-auto px-4 py-8">
-        <Dashboard />
-      </main>
-    </div>
-  );
-}`,
-      },
-      {
-        name: "components",
-        path: "src/components",
-        type: "folder",
-        children: [
-          {
-            name: "Header.tsx",
-            path: "src/components/Header.tsx",
-            type: "file",
-            content: `import React from 'react';
-
-interface HeaderProps {
-  onToggleTheme: () => void;
+function getScenarioData(scenarioId: string | null) {
+  if (scenarioId && SCENARIO_DATA[scenarioId]) return SCENARIO_DATA[scenarioId];
+  return SCENARIO_DATA["default"];
 }
 
-export function Header({ onToggleTheme }: HeaderProps) {
-  return (
-    <header className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
-      <h1 className="text-xl font-semibold">Dashboard</h1>
-      <button onClick={onToggleTheme} className="px-3 py-1 rounded bg-indigo-500 text-white">
-        Toggle Theme
-      </button>
-    </header>
-  );
-}`,
-          },
-          {
-            name: "Dashboard.tsx",
-            path: "src/components/Dashboard.tsx",
-            type: "file",
-            content: `import React from 'react';
-import { StatCard } from './StatCard';
-import { useStats } from '../hooks/useStats';
-
-export function Dashboard() {
-  const stats = useStats();
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {stats.map((stat) => (
-        <StatCard key={stat.label} {...stat} />
-      ))}
-    </div>
-  );
-}`,
-          },
-          {
-            name: "StatCard.tsx",
-            path: "src/components/StatCard.tsx",
-            type: "file",
-            content: `import React from 'react';
-
-interface StatCardProps {
-  label: string;
-  value: string | number;
-  trend: 'up' | 'down' | 'neutral';
-}
-
-export function StatCard({ label, value, trend }: StatCardProps) {
-  const trendColor = trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-gray-400';
-  
-  return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-6 bg-white dark:bg-gray-900">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-3xl font-bold mt-1">{value}</p>
-      <p className={\`text-sm mt-2 \${trendColor}\`}>
-        {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'} {trend}
-      </p>
-    </div>
-  );
-}`,
-          },
-        ],
-      },
-      {
-        name: "hooks",
-        path: "src/hooks",
-        type: "folder",
-        children: [
-          {
-            name: "useTheme.ts",
-            path: "src/hooks/useTheme.ts",
-            type: "file",
-            content: `import { useState, useCallback } from 'react';
-
-export function useTheme() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
-  const toggleTheme = useCallback(() => {
-    setTheme((t) => (t === 'light' ? 'dark' : 'light'));
-  }, []);
-  return { theme, toggleTheme };
-}`,
-          },
-          {
-            name: "useStats.ts",
-            path: "src/hooks/useStats.ts",
-            type: "file",
-            content: `export function useStats() {
-  return [
-    { label: 'Total Users', value: '12,847', trend: 'up' as const },
-    { label: 'Revenue', value: '$48,290', trend: 'up' as const },
-    { label: 'Active Sessions', value: '1,429', trend: 'neutral' as const },
-  ];
-}`,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    name: "package.json",
-    path: "package.json",
-    type: "file",
-    content: `{
-  "name": "dashboard-app",
-  "version": "1.0.0",
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  }
-}`,
-  },
-  {
-    name: "README.md",
-    path: "README.md",
-    type: "file",
-    content: `# Dashboard App
-
-A modern dashboard built with React and TypeScript.
-
-## Features
-- Responsive grid layout
-- Dark/light theme toggle
-- Stat cards with trend indicators
-
-## Getting Started
-\`\`\`bash
-npm install
-npm run dev
-\`\`\`
-`,
-  },
-];
-
-const MOCK_DIFFS: DiffChange[] = [
-  { file: "src/App.tsx", additions: 24, deletions: 0, content: "+ import { Header } from './components/Header';\n+ import { Dashboard } from './components/Dashboard';" },
-  { file: "src/components/Header.tsx", additions: 18, deletions: 0, content: "+ export function Header({ onToggleTheme }: HeaderProps) {" },
-  { file: "src/components/Dashboard.tsx", additions: 15, deletions: 0, content: "+ export function Dashboard() {" },
-  { file: "src/components/StatCard.tsx", additions: 22, deletions: 0, content: "+ export function StatCard({ label, value, trend }: StatCardProps) {" },
-  { file: "README.md", additions: 12, deletions: 0, content: "+ # Dashboard App\n+ A modern dashboard built with React and TypeScript." },
-];
-
-const TERMINAL_LINES = [
-  "$ opencode analyze task...",
-  "✓ Parsed requirements (3 features identified)",
-  "✓ Checked project context",
-  "$ mkdir -p src/components src/hooks",
-  "$ touch src/App.tsx",
-  "  Writing App.tsx... (24 lines)",
-  "$ touch src/components/Header.tsx",
-  "  Writing Header.tsx... (18 lines)",
-  "$ touch src/components/Dashboard.tsx",
-  "  Writing Dashboard.tsx... (15 lines)",
-  "$ touch src/components/StatCard.tsx",
-  "  Writing StatCard.tsx... (22 lines)",
-  "$ touch src/hooks/useTheme.ts",
-  "  Writing useTheme.ts... (10 lines)",
-  "$ touch src/hooks/useStats.ts",
-  "  Writing useStats.ts... (8 lines)",
-  "$ npm run typecheck",
-  "  ✓ No type errors found",
-  "$ npm run test",
-  "  PASS src/components/StatCard.test.tsx",
-  "  PASS src/hooks/useTheme.test.ts",
-  "  Tests: 5 passed, 0 failed",
-  "$ generating README.md...",
-  "  ✓ README.md generated",
-  "✓ All files created successfully",
-];
-
-export async function runMockAgent(userMessage: string) {
+export async function runMockAgent(userMessage: string, scenarioId?: string) {
   const store = useStore.getState();
-  const speed = [1200, 700, 300][store.speedLevel - 1];
-  
+  const speed = [1.8, 1.0, 0.4][store.speedLevel - 1];
+  const data = getScenarioData(scenarioId || null);
+
+  store.setActiveScenario(scenarioId || null);
   store.addMessage("user", userMessage);
   store.setInput("");
   store.setTyping(true);
+  store.setThinkingLabel("Analyzing your request...");
   store.clearTerminal();
+  store.setProgress(0);
 
   // Phase 1: Understanding
-  await delay(speed);
+  await delay(700 * speed);
   store.setPhase("understanding");
   store.setPillar("alignment", { score: 0.6, status: "yellow", detail: "Analyzing task requirements..." });
-  store.addMessage("assistant", "Let me analyze your request and break it down...");
-  
-  await delay(speed);
-  store.setTyping(false);
-  store.setTaskUnderstanding({
-    requirements: [
-      "Create a responsive dashboard with stat cards",
-      "Implement dark/light theme toggle",
-      "Use TypeScript with proper types",
-    ],
-    assumptions: [
-      "React 18 with functional components",
-      "Tailwind CSS for styling",
-      "No external data fetching needed (mock data)",
-    ],
-    questions: [
-      "Should charts be included in the dashboard?",
-    ],
-  });
-  store.setPillar("alignment", { score: 0.85, status: "yellow", detail: "Awaiting user confirmation" });
+  store.addActivity("think", "🧠 Reading and understanding your request...");
 
-  // Wait for user to confirm (simulated)
-  await delay(speed * 2);
+  store.addMessage("assistant", "Let me analyze your request and break it down. I want to make sure I understand exactly what you need before writing any code.");
+  store.setThinkingLabel("Breaking down requirements...");
+
+  await delay(500 * speed);
+  store.setTyping(false);
+  store.setTaskUnderstanding(data.understanding);
+  store.setPillar("alignment", { score: 0.85, status: "yellow", detail: "Awaiting user confirmation" });
+  store.addActivity("info", "📋 Intent interpretation ready — waiting for your confirmation");
+
+  // Wait for user to confirm (auto-confirm after delay)
+  await delay(2000 * speed);
   store.confirmAlignment();
+  store.addActivity("info", "✅ User confirmed task understanding — alignment locked at 92%");
+  store.addToast("success", "Alignment Confirmed", "Task understanding verified at 92%");
 
   // Phase 2: Proposing approaches
   store.setPhase("proposing");
   store.setTyping(true);
+  store.setThinkingLabel("Evaluating approaches...");
   store.setPillar("steerability", { score: 0.7, status: "yellow", detail: "Presenting approaches" });
-  
-  await delay(speed);
-  store.setTyping(false);
-  store.setApproaches([
-    {
-      id: "a1",
-      title: "Component-First Architecture",
-      description: "Build small, reusable components. Start with StatCard, compose into Dashboard.",
-      pros: ["Highly reusable", "Easy to test", "Clear separation"],
-      cons: ["More files upfront", "Slightly more boilerplate"],
-    },
-    {
-      id: "a2",
-      title: "Feature-Based Structure",
-      description: "Organize by feature (dashboard, settings) with co-located components.",
-      pros: ["Feature isolation", "Easy to navigate", "Scales well"],
-      cons: ["May duplicate shared components", "Convention-heavy"],
-    },
-    {
-      id: "a3",
-      title: "Minimal Flat Structure",
-      description: "All components in a single folder, minimal nesting.",
-      pros: ["Simple", "Fast to implement", "Low overhead"],
-      cons: ["Harder to scale", "Less organized"],
-    },
-  ]);
 
-  await delay(speed * 2);
+  await delay(600 * speed);
+  store.setTyping(false);
+  store.setApproaches(data.approaches);
+  store.addActivity("think", "💡 Generated 3 architectural approaches for your review");
+
+  await delay(2000 * speed);
   store.selectApproach("a1");
   store.setPillar("steerability", { score: 0.88, status: "green", detail: "Approach selected" });
-  store.addMessage("assistant", "Great choice! Starting with component-first architecture. I'll build reusable components and compose them together.");
+  store.addMessage("assistant", `Great choice! Starting with **${data.approaches[0].title}**. ${data.approaches[0].description}\n\nBeginning implementation now...`);
+  store.addActivity("info", `🎮 ${data.approaches[0].title} selected — beginning implementation`);
 
-  // Phase 3: Coding
+  // Phase 3: Coding with activity feed
   store.setPhase("coding");
   store.setTyping(true);
+  store.setThinkingLabel("Writing code...");
   store.setPillar("verification", { score: 0.3, status: "yellow", detail: "Generating code..." });
-  
-  for (let i = 0; i < TERMINAL_LINES.length; i++) {
+
+  let termIdx = 0;
+  for (const step of data.activityScript as ActivityStep[]) {
+    // Check pause
     if (useStore.getState().isPaused) {
-      while (useStore.getState().isPaused) await delay(200);
+      store.addToast("warning", "Agent Paused", "Click Resume to continue");
+      while (useStore.getState().isPaused) {
+        await delay(200);
+        // Check for redirect
+        const state = useStore.getState();
+        if (state.redirectMode && state.redirectMessage) {
+          store.addMessage("user", `[Redirect] ${state.redirectMessage}`);
+          store.addActivity("info", `🔄 User redirected: ${state.redirectMessage}`);
+          store.setRedirectMode(false);
+          store.setRedirectMessage("");
+          store.togglePause();
+          break;
+        }
+      }
     }
-    await delay(speed / 3);
-    store.addTerminalLine(TERMINAL_LINES[i]);
+    await delay(step.delay * speed);
+    store.addActivity(step.category, step.message, step.detail);
+    if (step.progress !== undefined) store.setProgress(step.progress);
+    if (step.touchFile) store.touchFile(step.touchFile);
+
+    // Feed terminal lines proportionally
+    const targetTermIdx = Math.floor((step.progress || 0) / 100 * data.terminalLines.length);
+    while (termIdx < targetTermIdx && termIdx < data.terminalLines.length) {
+      store.addTerminalLine(data.terminalLines[termIdx]);
+      termIdx++;
+    }
   }
 
-  store.setFiles(MOCK_FILES);
-  store.setActiveFile("src/App.tsx");
+  // Flush remaining terminal lines
+  while (termIdx < data.terminalLines.length) {
+    store.addTerminalLine(data.terminalLines[termIdx]);
+    termIdx++;
+  }
+
+  store.setFiles(data.files);
+  if (data.files[0]?.children?.[0]) {
+    const firstFile = data.files[0].children[0];
+    store.setActiveFile(firstFile.type === "file" ? firstFile.path : (firstFile.children?.[0]?.path || null));
+  }
   store.setTyping(false);
+  store.setThinkingLabel("");
 
   // Phase 4: Verification
   store.setPhase("verifying");
-  store.setDiffs(MOCK_DIFFS);
-  store.setTestResults({ passed: 5, failed: 0, total: 5 });
-  store.setPillar("verification", { score: 0.95, status: "green", detail: "All tests pass, code reviewed" });
-  
-  await delay(speed);
-  store.addMessage("assistant", "✅ All done! Created 6 files with full TypeScript types. All 5 tests pass. README.md generated. Check the workspace to review the code and diffs.");
+  store.setDiffs(data.diffs);
+  store.setTestResults(data.testResults);
+  store.setPillar("verification", {
+    score: data.pillarScores.verification,
+    status: "green",
+    detail: `All tests pass • ${data.testResults.coverage}% coverage`,
+  });
+  store.addActivity("verify", `🔍 Verification complete — ${data.testResults.passed}/${data.testResults.total} tests pass, ${data.testResults.coverage}% coverage`);
+  store.setVerificationOpen(true);
+  store.addToast("success", "Task Complete", `${data.testResults.passed} tests passing, ${data.testResults.coverage}% coverage`);
+
+  await delay(500 * speed);
+  const fileCount = countFiles(data.files);
+  store.addMessage("assistant", `✅ All done! Here's what I built:\n\n**${fileCount} files created** with full TypeScript types.\n\n**All ${data.testResults.passed} tests passing** • **${data.testResults.coverage}% code coverage**\n\nCheck the workspace panel to review code and diffs.`, {
+    fileRefs: data.diffs.map(d => d.file),
+  });
 
   // Phase 5: Complete
   store.setPhase("complete");
-  
-  // Update adaptability
+  store.setProgress(100);
+
+  // Update pillar scores
+  store.setPillar("alignment", { score: data.pillarScores.alignment, status: "green", detail: "Task aligned with intent" });
+  store.setPillar("steerability", { score: data.pillarScores.steerability, status: "green", detail: "Full control maintained" });
+
   const interactions = useStore.getState().preferences.interactionCount;
-  const adaptScore = Math.min(0.95, 0.3 + interactions * 0.08);
+  const adaptScore = Math.min(0.95, data.pillarScores.adaptability + interactions * 0.05);
   store.setPillar("adaptability", {
     score: adaptScore,
     status: adaptScore > 0.7 ? "green" : "yellow",
-    detail: `Learned from ${interactions} interactions`,
+    detail: `Learned from ${interactions} interactions • Prefers ${useStore.getState().preferences.codeStyle} style`,
   });
+  store.addActivity("info", `🧠 Adaptability updated — learned from ${interactions} interactions`);
+
+  // Save session
+  store.addSession({
+    title: userMessage.slice(0, 60),
+    description: `Completed with ${fileCount} files and ${data.testResults.passed} passing tests`,
+    timestamp: Date.now(),
+    duration: Math.round(180 + Math.random() * 300),
+    pillars: useStore.getState().pillars,
+    filesCreated: fileCount,
+    testsPassed: data.testResults.passed,
+    testsFailed: data.testResults.failed,
+    scenario: scenarioId || "default",
+  });
+}
+
+function countFiles(nodes: import("./store").FileNode[]): number {
+  let count = 0;
+  for (const n of nodes) {
+    if (n.type === "file") count++;
+    if (n.children) count += countFiles(n.children);
+  }
+  return count;
+}
+
+export function exportSessionMarkdown(): string {
+  const state = useStore.getState();
+  const lines: string[] = [
+    "# OpenCode HCI — Session Report",
+    "",
+    `**Date:** ${new Date().toLocaleDateString()}`,
+    `**Scenario:** ${state.activeScenario || "Custom"}`,
+    "",
+    "## Pillar Scores",
+    "",
+    `| Pillar | Score | Status |`,
+    `|--------|-------|--------|`,
+    `| 🎯 Alignment | ${Math.round(state.pillars.alignment.score * 100)}% | ${state.pillars.alignment.status} |`,
+    `| 🎮 Steerability | ${Math.round(state.pillars.steerability.score * 100)}% | ${state.pillars.steerability.status} |`,
+    `| ✅ Verification | ${Math.round(state.pillars.verification.score * 100)}% | ${state.pillars.verification.status} |`,
+    `| 🧠 Adaptability | ${Math.round(state.pillars.adaptability.score * 100)}% | ${state.pillars.adaptability.status} |`,
+    "",
+    "## Chat History",
+    "",
+  ];
+
+  for (const msg of state.messages) {
+    const role = msg.role === "user" ? "**You**" : "**Agent**";
+    lines.push(`${role}: ${msg.content}`);
+    lines.push("");
+  }
+
+  if (state.testResults) {
+    lines.push("## Test Results", "");
+    lines.push(`- Passed: ${state.testResults.passed}`);
+    lines.push(`- Failed: ${state.testResults.failed}`);
+    if (state.testResults.coverage !== undefined) lines.push(`- Coverage: ${state.testResults.coverage}%`);
+    lines.push("");
+  }
+
+  if (state.diffs.length > 0) {
+    lines.push("## Files Changed", "");
+    for (const d of state.diffs) {
+      lines.push(`- **${d.file}**: +${d.additions} -${d.deletions}`);
+    }
+    lines.push("");
+  }
+
+  lines.push("## Activity Log", "");
+  for (const a of state.activities) {
+    lines.push(`- ${new Date(a.timestamp).toLocaleTimeString()} — ${a.message}`);
+  }
+
+  return lines.join("\n");
 }

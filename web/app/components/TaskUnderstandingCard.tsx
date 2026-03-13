@@ -11,9 +11,13 @@ export function TaskUnderstandingCard() {
   return (
     <div className="animate-fade-in bg-surface border border-accent/30 rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 rounded-md bg-accent/20 flex items-center justify-center text-accent text-xs">📋</div>
-        <h3 className="text-sm font-semibold text-white">Task Understanding</h3>
-        <span className="ml-auto text-xs text-accent font-medium px-2 py-0.5 rounded-full bg-accent/10">Pillar 1: Alignment</span>
+        <div className="w-6 h-6 rounded-md bg-accent/20 flex items-center justify-center text-accent text-xs">
+          📋
+        </div>
+        <h3 className="text-sm font-semibold text-white">I understand you want:</h3>
+        <span className="ml-auto text-xs text-accent font-medium px-2 py-0.5 rounded-full bg-accent/10">
+          🎯 Alignment Check
+        </span>
       </div>
 
       <div>
@@ -40,7 +44,7 @@ export function TaskUnderstandingCard() {
 
       {task.questions.length > 0 && (
         <div>
-          <p className="text-xs font-medium text-muted mb-1">Questions</p>
+          <p className="text-xs font-medium text-muted mb-1">Questions for you</p>
           <ul className="space-y-1">
             {task.questions.map((q, i) => (
               <li key={i} className="text-sm text-gray-400 flex items-start gap-2">
@@ -51,12 +55,17 @@ export function TaskUnderstandingCard() {
         </div>
       )}
 
-      <button
-        onClick={confirmAlignment}
-        className="w-full mt-2 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent/90 transition-colors"
-      >
-        ✓ Looks correct — proceed
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={confirmAlignment}
+          className="flex-1 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent/90 transition-colors"
+        >
+          ✓ Looks correct — proceed
+        </button>
+        <button className="px-4 py-2 rounded-lg border border-border text-sm text-muted hover:text-white hover:bg-surface-hover transition-colors">
+          ✏️ Correct
+        </button>
+      </div>
     </div>
   );
 }
