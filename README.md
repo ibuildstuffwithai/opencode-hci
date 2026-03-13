@@ -1,141 +1,146 @@
-<p align="center">
-  <a href="https://opencode.ai">
-    <picture>
-      <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo">
-    </picture>
-  </a>
-</p>
-<p align="center">The open source AI coding agent.</p>
-<p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/opencode-ai"><img alt="npm" src="https://img.shields.io/npm/v/opencode-ai?style=flat-square" /></a>
-  <a href="https://github.com/anomalyco/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/opencode/publish.yml?style=flat-square&branch=dev" /></a>
-</p>
+# OpenCode HCI — Human-Centered Coding Agent
 
-<p align="center">
-  <a href="README.md">English</a> |
-  <a href="README.zh.md">简体中文</a> |
-  <a href="README.zht.md">繁體中文</a> |
-  <a href="README.ko.md">한국어</a> |
-  <a href="README.de.md">Deutsch</a> |
-  <a href="README.es.md">Español</a> |
-  <a href="README.fr.md">Français</a> |
-  <a href="README.it.md">Italiano</a> |
-  <a href="README.da.md">Dansk</a> |
-  <a href="README.ja.md">日本語</a> |
-  <a href="README.pl.md">Polski</a> |
-  <a href="README.ru.md">Русский</a> |
-  <a href="README.bs.md">Bosanski</a> |
-  <a href="README.ar.md">العربية</a> |
-  <a href="README.no.md">Norsk</a> |
-  <a href="README.br.md">Português (Brasil)</a> |
-  <a href="README.th.md">ไทย</a> |
-  <a href="README.tr.md">Türkçe</a> |
-  <a href="README.uk.md">Українська</a> |
-  <a href="README.bn.md">বাংলা</a> |
-  <a href="README.gr.md">Ελληνικά</a> |
-  <a href="README.vi.md">Tiếng Việt</a>
-</p>
+> **The first coding agent built on research-backed human-AI interaction principles.**
 
-[![OpenCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
+A web-based coding agent that implements the 4-pillar interaction quality system from the CMU/Stanford/Princeton/UIUC paper [*"Humans are Missing from AI Coding Agent Research"*](https://zorazrw.github.io/files/position-haicode.pdf). Built on top of [OpenCode](https://github.com/anomalyco/opencode).
+
+🔗 **Live Demo:** [web-five-smoky-69.vercel.app](https://web-five-smoky-69.vercel.app)
 
 ---
 
-### Installation
+## What This Is
 
-```bash
-# YOLO
-curl -fsSL https://opencode.ai/install | bash
+Every coding agent today (Cursor, Copilot, Replit, Lovable) focuses on **autonomous task completion** — how much can the AI do without human involvement? The research shows this is the wrong metric.
 
-# Package managers
-npm i -g opencode-ai@latest        # or bun/pnpm/yarn
-scoop install opencode             # Windows
-choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS and Linux (recommended, always up to date)
-brew install opencode              # macOS and Linux (official brew formula, updated less)
-sudo pacman -S opencode            # Arch Linux (Stable)
-paru -S opencode-bin               # Arch Linux (Latest from AUR)
-mise use -g opencode               # Any OS
-nix run nixpkgs#opencode           # or github:anomalyco/opencode for latest dev branch
-```
+OpenCode HCI flips the script: **the human stays in the loop at every step**, and the agent's quality is measured by how well it collaborates, not how independently it operates.
 
-> [!TIP]
-> Remove versions older than 0.1.x before installing.
+The interface makes this concrete with a split-panel design:
+- **Left:** Conversational chat where you describe what to build
+- **Right:** Live workspace showing the agent working (file tree, code editor, terminal, diffs)
+- **Bottom:** 4-pillar interaction quality dashboard tracking collaboration health in real-time
 
-### Desktop App (BETA)
+## The 4 Pillars
 
-OpenCode is also available as a desktop application. Download directly from the [releases page](https://github.com/anomalyco/opencode/releases) or [opencode.ai/download](https://opencode.ai/download).
+Based on formal metrics from the position paper by Zora Wang, Kilian Lieret, Yuxiang Wei, Valerie Chen, Lingming Zhang, Karthik Narasimhan, Ludwig Schmidt et al.
 
-| Platform              | Download                              |
-| --------------------- | ------------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-darwin-aarch64.dmg` |
-| macOS (Intel)         | `opencode-desktop-darwin-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe`    |
-| Linux                 | `.deb`, `.rpm`, or AppImage           |
+### 🎯 Pillar 1: Alignment
+**Metric:** `G(H,C) = sim_Z(z_H, z_C)` — Does the agent understand what the human wants?
 
-```bash
-# macOS (Homebrew)
-brew install --cask opencode-desktop
-# Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
-```
+Before writing any code, the agent shows a **Task Understanding Card** with:
+- Parsed requirements extracted from your prompt
+- Assumptions the agent is making
+- Clarifying questions if anything is ambiguous
 
-#### Installation Directory
+You confirm, correct, or redirect before a single line of code is written. This eliminates the #1 failure mode of coding agents: building the wrong thing.
 
-The install script respects the following priority order for the installation path:
+### 🎮 Pillar 2: Steerability
+**Metric:** `S(H,C) = E[sim_τ(τ', τ*)]` — Can the human control the agent's approach?
 
-1. `$OPENCODE_INSTALL_DIR` - Custom installation directory
-2. `$XDG_BIN_DIR` - XDG Base Directory Specification compliant path
-3. `$HOME/bin` - Standard user binary directory (if it exists or can be created)
-4. `$HOME/.opencode/bin` - Default fallback
+The agent proposes **2-3 implementation approaches** with pros, cons, and trade-offs. You pick the one that fits. Mid-task controls include:
+- **Pause/Resume** — stop the agent and redirect anytime
+- **Speed** (1-3) — control how fast the agent works
+- **Detail Level** (1-3) — control verbosity of explanations
 
-```bash
-# Examples
-OPENCODE_INSTALL_DIR=/usr/local/bin curl -fsSL https://opencode.ai/install | bash
-XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
-```
+### ✅ Pillar 3: Verification
+**Metric:** `V(H,C) = E[A(s_H, y*(o, z_H))]` — Can the human verify the output is correct?
 
-### Agents
+After each coding step, the agent provides visual proof:
+- **File diffs** with addition/deletion counts
+- **Terminal output** showing commands run and results
+- **Test results** for logic verification
+- **Auto-generated README** for every project built
 
-OpenCode includes two built-in agents you can switch between with the `Tab` key.
+The verification adapts to output type (UI → preview, API → response, logic → tests).
 
-- **build** - Default, full-access agent for development work
-- **plan** - Read-only agent for analysis and code exploration
-  - Denies file edits by default
-  - Asks permission before running bash commands
-  - Ideal for exploring unfamiliar codebases or planning changes
+### 🧠 Pillar 4: Adaptability
+**Metric:** `A(C_k) = E[Perf(C_k) - Perf(C_0)]` — Does the agent learn from the human over time?
 
-Also included is a **general** subagent for complex searches and multistep tasks.
-This is used internally and can be invoked using `@general` in messages.
-
-Learn more about [agents](https://opencode.ai/docs/agents).
-
-### Documentation
-
-For more info on how to configure OpenCode, [**head over to our docs**](https://opencode.ai/docs).
-
-### Contributing
-
-If you're interested in contributing to OpenCode, please read our [contributing docs](./CONTRIBUTING.md) before submitting a pull request.
-
-### Building on OpenCode
-
-If you are working on a project that's related to OpenCode and is using "opencode" as part of its name, for example "opencode-dashboard" or "opencode-mobile", please add a note to your README to clarify that it is not built by the OpenCode team and is not affiliated with us in any way.
-
-### FAQ
-
-#### How is this different from Claude Code?
-
-It's very similar to Claude Code in terms of capability. Here are the key differences:
-
-- 100% open source
-- Not coupled to any provider. Although we recommend the models we provide through [OpenCode Zen](https://opencode.ai/zen), OpenCode can be used with Claude, OpenAI, Google, or even local models. As models evolve, the gaps between them will close and pricing will drop, so being provider-agnostic is important.
-- Out-of-the-box LSP support
-- A focus on TUI. OpenCode is built by neovim users and the creators of [terminal.shop](https://terminal.shop); we are going to push the limits of what's possible in the terminal.
-- A client/server architecture. This, for example, can allow OpenCode to run on your computer while you drive it remotely from a mobile app, meaning that the TUI frontend is just one of the possible clients.
+Tracks your preferences across sessions:
+- Naming conventions (camelCase vs snake_case)
+- Code style (functional vs OOP)
+- Framework choices
+- Shows an **Adaptation Score** that improves over time
 
 ---
 
-**Join our community** [Discord](https://discord.gg/opencode) | [X.com](https://x.com/opencode)
+## Quick Start
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). Works immediately in **mock mode** — no API keys needed.
+
+For real AI coding, set `ANTHROPIC_API_KEY` in your environment.
+
+## Architecture
+
+```
+opencode-hci/
+├── web/                          # Next.js 14 web UI
+│   ├── app/
+│   │   ├── page.tsx              # Main layout: chat + workspace + pillars
+│   │   ├── store.ts              # Zustand global state (192 lines)
+│   │   ├── mock-agent.ts         # Mock agent with realistic simulation (324 lines)
+│   │   ├── layout.tsx            # Root layout with dark theme
+│   │   ├── globals.css           # Custom styles + typing animations
+│   │   └── components/
+│   │       ├── ChatPanel.tsx         # Chat with message history + quick prompts
+│   │       ├── TaskUnderstandingCard.tsx  # Pillar 1: alignment confirmation
+│   │       ├── ApproachSelector.tsx      # Pillar 2: approach picker with pros/cons
+│   │       ├── WorkspacePanel.tsx        # File tree + Monaco + terminal + diffs
+│   │       ├── PillarDashboard.tsx       # Bottom bar with 4-pillar scores
+│   │       └── ControlBar.tsx            # Speed, detail, pause controls
+│   └── vercel.json               # Deployment config
+├── packages/                     # Original OpenCode packages
+├── infra/                        # Infrastructure configs
+└── README.md                     # This file
+```
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 14 (App Router) |
+| Language | TypeScript + React 18 |
+| Styling | Tailwind CSS (dark theme #0e0e10) |
+| Editor | Monaco Editor |
+| State | Zustand |
+| Deployment | Vercel |
+
+## Features
+
+- **Split-panel UI** — Chat left, workspace right, pillars bottom
+- **Full mock mode** — Realistic typing animations, step-by-step execution, no API keys needed
+- **File tree** — Folder expand/collapse, file selection
+- **Monaco code editor** — Syntax highlighting, read-only during agent work
+- **Terminal output** — Real-time agent activity feed
+- **Diff viewer** — Per-file change stats with additions/deletions
+- **Pillar indicators** — Color-coded health (green/yellow/red) with progress bars
+- **Speed/Detail controls** — Customize agent behavior in real-time
+- **Pause/Resume** — Interrupt and redirect the agent mid-task
+- **Quick prompts** — Pre-built examples to get started fast
+
+## The Research
+
+This project productizes insights from:
+
+> **"Humans are Missing from AI Coding Agent Research"**
+> Zora Zhiruo Wang, Kilian Lieret, Yuxiang Wei, Valerie Chen, Lingming Zhang, Karthik R. Narasimhan, Ludwig Schmidt
+> CMU, Stanford, Princeton, UIUC — 2025
+
+The paper argues that AI coding research is over-indexed on autonomous task completion (SWE-bench scores) while ignoring the human side of the interaction. The 4 pillars provide a formal framework for measuring and improving human-agent collaboration quality.
+
+## What's Different
+
+Unlike Cursor/Copilot (autocomplete), Replit/Lovable (autonomous generation), or Devin (fully autonomous agent), OpenCode HCI treats **collaboration quality as the primary metric**. The agent doesn't just write code — it proves it understood you, lets you steer, shows its work, and learns your style.
+
+---
+
+## License
+
+MIT — see [LICENSE](./LICENSE)
+
+Built by [Holly AI](https://github.com/ibuildstuffwithai) • Based on [OpenCode](https://github.com/anomalyco/opencode)
