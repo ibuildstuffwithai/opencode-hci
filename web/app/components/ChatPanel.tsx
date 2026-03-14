@@ -3,9 +3,11 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useStore, Message } from "../store";
 import { runMockAgent } from "../mock-agent";
+import { runStreamAgent } from "../stream-agent";
 import { SCENARIOS } from "../scenarios";
 import { TaskUnderstandingCard } from "./TaskUnderstandingCard";
 import { ApproachSelector } from "./ApproachSelector";
+import { InlineError } from "./InlineError";
 
 function MessageBubble({ msg }: { msg: Message }) {
   const setReaction = useStore((s) => s.setReaction);
@@ -117,7 +119,11 @@ function MessageBubble({ msg }: { msg: Message }) {
   );
 }
 
-export function ChatPanel() {
+interface ChatPanelProps {
+  mode?: "build" | "chat" | "design";
+}
+
+export function ChatPanel({ mode = "build" }: ChatPanelProps) {
   const messages = useStore((s) => s.messages);
   const inputValue = useStore((s) => s.inputValue);
   const isTyping = useStore((s) => s.isTyping);
@@ -129,24 +135,65 @@ export function ChatPanel() {
   const strategy = useStore((s) => s.strategy);
   const setStrategy = useStore((s) => s.setStrategy);
   const reset = useStore((s) => s.reset);
+  const chatErrors = useStore((s) => s.chatErrors);
+  const removeChatError = useStore((s) => s.removeChatError);
+  const clearChatErrors = useStore((s) => s.clearChatErrors);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [attachments, setAttachments] = useState<string[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping, taskUnderstanding, approaches]);
 
-  const handleSend = () => {
+  // Auto-resize textarea
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (ta) {
+      ta.style.height = "auto";
+      ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`;
+    }
+  }, [inputValue]);
+
+  const handleImageFile = (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result;
+      if (typeof result === "string") setAttachments((prev) => [...prev, result]);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files);
+    files.forEach((file) => handleImageFile(file));
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSend = async () => {
     const msg = inputValue.trim();
-    if (!msg) return;
-    runMockAgent(msg);
+    if (!msg && attachments.length === 0) return;
+    const effectiveMode = mode === "design" ? "design" : mode;
+    const images = attachments.length > 0 ? [...attachments] : undefined;
+    const ok = await runStreamAgent(msg || "Build this from the uploaded image", { mode: effectiveMode, imageData: images?.[0], images });
+    setAttachments([]);
+    if (!ok) {
+      const s = useStore.getState();
+      useStore.setState({ messages: s.messages.slice(0, -1) });
+      runMockAgent(msg || "Build this");
+    }
   };
 
   const handleKey = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-    // Cmd+Enter also sends
+    // Only send on Cmd/Ctrl+Enter
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       handleSend();
@@ -162,25 +209,34 @@ export function ChatPanel() {
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent-purple flex items-center justify-center mb-4 shadow-xl shadow-accent/20">
               <span className="text-2xl">🤖</span>
             </div>
-            <h2 className="text-lg font-semibold text-white mb-1">What would you like to build?</h2>
+            <h2 className="text-lg font-semibold text-white mb-1">
+              {mode === "build" && "What would you like to build?"}
+              {mode === "chat" && "Ask about your code"}
+              {mode === "design" && "Design a UI"}
+            </h2>
             <p className="text-sm text-muted max-w-[280px]">
-              Describe a coding task and I&apos;ll plan, build, and verify it with full transparency.
+              {mode === "build" && "Describe a coding task and I'll plan, build, and verify it with full transparency."}
+              {mode === "chat" && "Ask questions about the generated code. I'll explain without generating new files."}
+              {mode === "design" && "Upload a screenshot, describe a UI, or paste design tokens. I'll generate pixel-perfect HTML/CSS."}
             </p>
-            <div className="mt-6 space-y-2 w-full max-w-[300px]">
-              {SCENARIOS.slice(0, 3).map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => {
-                    reset();
-                    runMockAgent(s.prompt, s.id);
-                  }}
-                  className="w-full text-left px-3 py-2.5 text-sm rounded-lg border border-border hover:bg-surface-hover hover:border-accent/20 text-muted hover:text-white transition-all flex items-center gap-2 group"
-                >
-                  <span className="group-hover:scale-110 transition-transform">{s.icon}</span>
-                  <span>{s.title}</span>
-                </button>
-              ))}
-            </div>
+            {mode === "build" && (
+              <div className="mt-6 space-y-2 w-full max-w-[300px]">
+                {SCENARIOS.slice(0, 3).map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={async () => {
+                      reset();
+                      const ok = await runStreamAgent(s.prompt, { scenarioId: s.id, mode: "build" });
+                      if (!ok) runMockAgent(s.prompt, s.id);
+                    }}
+                    className="w-full text-left px-3 py-2.5 text-sm rounded-lg border border-border hover:bg-surface-hover hover:border-accent/20 text-muted hover:text-white transition-all flex items-center gap-2 group"
+                  >
+                    <span className="group-hover:scale-110 transition-transform">{s.icon}</span>
+                    <span>{s.title}</span>
+                  </button>
+                ))}
+              </div>
+            )}
             <p className="text-[10px] text-muted mt-4">
               <kbd className="px-1.5 py-0.5 bg-surface-hover rounded">⌘K</kbd> for command palette
             </p>
@@ -193,6 +249,27 @@ export function ChatPanel() {
 
         {taskUnderstanding && phase === "understanding" && <TaskUnderstandingCard />}
         {approaches.length > 0 && phase === "proposing" && <ApproachSelector />}
+
+        {chatErrors.map((err) => (
+          <InlineError
+            key={err.id}
+            title={err.title}
+            message={err.message}
+            type={err.type}
+            onRetry={
+              err.retryMessage
+                ? async () => {
+                    removeChatError(err.id);
+                    const ok = await runStreamAgent(err.retryMessage!, err.retryOptions as Parameters<typeof runStreamAgent>[1]);
+                    if (!ok) {
+                      runMockAgent(err.retryMessage!);
+                    }
+                  }
+                : undefined
+            }
+            onDismiss={() => removeChatError(err.id)}
+          />
+        ))}
 
         {isTyping && (
           <div className="flex justify-start animate-fade-in">
@@ -232,29 +309,82 @@ export function ChatPanel() {
       )}
 
       {/* Input */}
-      <div className="p-4 border-t border-border">
-        <div className="flex items-end gap-2 bg-surface rounded-xl border border-border p-2 focus-within:border-accent/30 transition-colors">
+      <div
+        className="p-4 border-t border-border"
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+        onDragLeave={(e) => { if (e.currentTarget === e.target || !e.currentTarget.contains(e.relatedTarget as Node)) setIsDragging(false); }}
+        onDrop={handleDrop}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            const files = Array.from(e.target.files || []);
+            files.forEach((file) => handleImageFile(file));
+            e.target.value = "";
+          }}
+        />
+
+        {/* Drag overlay */}
+        {isDragging && (
+          <div className="mb-3 border-2 border-dashed border-accent rounded-xl p-6 text-center bg-accent/10 animate-fade-in">
+            <span className="text-2xl">📸</span>
+            <p className="text-xs text-accent mt-1 font-medium">Drop image(s) here</p>
+          </div>
+        )}
+
+        {/* Attachment thumbnails */}
+        {attachments.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2">
+            {attachments.map((src, i) => (
+              <div key={i} className="relative group w-16 h-16 rounded-lg overflow-hidden border border-border bg-surface shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt={`Attachment ${i + 1}`} className="w-full h-full object-cover" />
+                <button
+                  onClick={() => removeAttachment(i)}
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="relative bg-surface border border-border focus-within:border-accent/30 transition-colors">
           <textarea
+            ref={textareaRef}
             value={inputValue}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Describe what you want to build..."
-            rows={1}
-            className="flex-1 bg-transparent resize-none text-sm text-white placeholder:text-muted outline-none px-2 py-1.5 max-h-32"
+            placeholder={
+              mode === "build" ? "Describe what to build..." :
+              mode === "design" ? "Describe the UI or drop an image..." :
+              "Ask a question..."
+            }
+            rows={4}
+            className="w-full bg-transparent resize-none text-sm text-white placeholder:text-muted outline-none px-3 py-3 min-h-[100px] max-h-[250px]"
           />
-          <button
-            onClick={handleSend}
-            disabled={!inputValue.trim() || isTyping}
-            className="px-3 py-1.5 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-accent/20"
-          >
-            Send
-          </button>
-        </div>
-        <div className="flex items-center justify-between mt-1.5 px-1">
-          <span className="text-[9px] text-muted">
-            <kbd className="px-1 py-0.5 bg-surface-hover rounded">Enter</kbd> to send •
-            <kbd className="px-1 py-0.5 bg-surface-hover rounded ml-1">Shift+Enter</kbd> new line
-          </span>
+          <div className="flex items-center justify-between px-2 pb-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-7 h-7 rounded-lg text-muted hover:text-white hover:bg-surface-hover flex items-center justify-center transition-colors"
+              title="Attach image"
+              type="button"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <button
+              onClick={handleSend}
+              disabled={(!inputValue.trim() && attachments.length === 0) || isTyping}
+              className="w-8 h-8 rounded-lg bg-accent text-white flex items-center justify-center hover:bg-accent/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

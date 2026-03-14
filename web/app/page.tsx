@@ -1,10 +1,12 @@
 "use client";
 
-import { useStore } from "./store";
+import { useStore, FileNode } from "./store";
 import { LandingScreen } from "./components/LandingScreen";
 import { ChatPanel } from "./components/ChatPanel";
-import { WorkspacePanel } from "./components/WorkspacePanel";
-import { ActivityPanel } from "./components/ActivityPanel";
+import { FileTree } from "./components/FileTree";
+import { CodeEditor } from "./components/CodeEditor";
+import { PreviewPanel } from "./components/PreviewPanel";
+import { ConsolePanel } from "./components/ConsolePanel";
 import { PillarDashboard } from "./components/PillarDashboard";
 import { ControlBar } from "./components/ControlBar";
 import { ToastContainer } from "./components/ToastContainer";
@@ -12,43 +14,86 @@ import { CommandPalette } from "./components/CommandPalette";
 import { VerificationPanel } from "./components/VerificationPanel";
 import { SettingsPage } from "./components/SettingsPage";
 import { HistoryPage } from "./components/HistoryPage";
+import { AutoSave } from "./components/AutoSave";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { NetworkStatus } from "./components/NetworkStatus";
 import { useState, useEffect, useCallback } from "react";
 
-type RightTab = "activity" | "workspace";
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isMobile;
+}
+
+type SidebarPanel = "build" | "chat" | "design" | "files" | null;
 
 export default function Home() {
   const view = useStore((s) => s.view);
   const phase = useStore((s) => s.phase);
+  const isTyping = useStore((s) => s.isTyping);
   const setCommandPaletteOpen = useStore((s) => s.setCommandPaletteOpen);
   const commandPaletteOpen = useStore((s) => s.commandPaletteOpen);
-  const mobilePanel = useStore((s) => s.mobilePanel);
-  const setMobilePanel = useStore((s) => s.setMobilePanel);
-  const [rightTab, setRightTab] = useState<RightTab>("activity");
+  const files = useStore((s) => s.files);
+  const activeFile = useStore((s) => s.activeFile);
+  const [activePanel, setActivePanel] = useState<SidebarPanel>("build");
+  const [showPillars, setShowPillars] = useState(false);
+  const [bottomHeight, setBottomHeight] = useState(150);
+  const [showConsole, setShowConsole] = useState(false);
+  const [showCodeOverlay, setShowCodeOverlay] = useState(false);
+  const isMobile = useIsMobile();
+  const [mobileView, setMobileView] = useState<"preview" | "build" | "chat" | "files" | "code">("preview");
+
+  // Show code overlay when a file is selected from the Files panel
+  useEffect(() => {
+    if (activeFile && activePanel === "files") {
+      setShowCodeOverlay(true);
+    }
+  }, [activeFile, activePanel]);
+
+  const togglePanel = (panel: SidebarPanel) => {
+    setActivePanel((prev) => (prev === panel ? null : panel));
+  };
 
   // Global keyboard shortcuts
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // Cmd+K or Ctrl+K for command palette
-    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-      e.preventDefault();
-      setCommandPaletteOpen(!commandPaletteOpen);
-    }
-    // Escape to close panels
-    if (e.key === "Escape") {
-      setCommandPaletteOpen(false);
-    }
-  }, [commandPaletteOpen, setCommandPaletteOpen]);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen(!commandPaletteOpen);
+      }
+      if (e.key === "Escape") {
+        setCommandPaletteOpen(false);
+        setShowCodeOverlay(false);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "b") {
+        e.preventDefault();
+        setShowPillars((p) => !p);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "j") {
+        e.preventDefault();
+        setShowConsole((c) => !c);
+      }
+    },
+    [commandPaletteOpen, setCommandPaletteOpen]
+  );
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  // Toasts + Command Palette are global
   const globalOverlays = (
     <>
       <ToastContainer />
       <CommandPalette />
       <VerificationPanel />
+      <AutoSave />
+      <NetworkStatus />
     </>
   );
 
@@ -56,7 +101,9 @@ export default function Home() {
     return (
       <>
         {globalOverlays}
-        <LandingScreen />
+        <ErrorBoundary fallbackTitle="Failed to load landing screen">
+          <LandingScreen />
+        </ErrorBoundary>
       </>
     );
   }
@@ -65,7 +112,9 @@ export default function Home() {
     return (
       <>
         {globalOverlays}
-        <SettingsPage />
+        <ErrorBoundary fallbackTitle="Failed to load settings">
+          <SettingsPage />
+        </ErrorBoundary>
       </>
     );
   }
@@ -74,114 +123,314 @@ export default function Home() {
     return (
       <>
         {globalOverlays}
-        <HistoryPage />
+        <ErrorBoundary fallbackTitle="Failed to load history">
+          <HistoryPage />
+        </ErrorBoundary>
       </>
     );
   }
 
+  const sidebarButtons: { id: SidebarPanel; icon: string; label: string }[] = [
+    { id: "build", icon: "🔨", label: "Build" },
+    { id: "chat", icon: "💬", label: "Chat" },
+    { id: "design", icon: "🎨", label: "Design" },
+    { id: "files", icon: "📁", label: "Files" },
+  ];
+
+  // Mobile layout
+  if (isMobile) {
+    const mobileTabButtons: { id: typeof mobileView; icon: string; label: string }[] = [
+      { id: "preview", icon: "👁", label: "Preview" },
+      { id: "build", icon: "🔨", label: "Build" },
+      { id: "chat", icon: "💬", label: "Chat" },
+      { id: "files", icon: "📁", label: "Files" },
+      { id: "code", icon: "📝", label: "Code" },
+    ];
+
+    return (
+      <>
+        {globalOverlays}
+        <div className="h-[100dvh] flex flex-col overflow-hidden">
+          {/* Mobile header */}
+          <header className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-surface shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-accent to-accent-purple flex items-center justify-center text-white font-bold text-[10px] shadow-lg shadow-accent/20">
+                OC
+              </div>
+              {phase !== "idle" && (
+                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  <span className="text-[9px] text-green-400 font-medium">Running</span>
+                </div>
+              )}
+            </div>
+            <ControlBar />
+          </header>
+
+          {/* Mobile content area */}
+          <div className="flex-1 overflow-hidden">
+            {mobileView === "preview" && (
+              <ErrorBoundary fallbackTitle="Preview error">
+                <PreviewPanel />
+              </ErrorBoundary>
+            )}
+            {mobileView === "build" && (
+              <ErrorBoundary fallbackTitle="Chat panel error">
+                <ChatPanel mode="build" />
+              </ErrorBoundary>
+            )}
+            {mobileView === "chat" && (
+              <ErrorBoundary fallbackTitle="Chat panel error">
+                <ChatPanel mode="chat" />
+              </ErrorBoundary>
+            )}
+            {mobileView === "files" && (
+              <ErrorBoundary fallbackTitle="File tree error">
+                <FileTree />
+              </ErrorBoundary>
+            )}
+            {mobileView === "code" && (
+              <ErrorBoundary fallbackTitle="Code editor error">
+                <CodeEditor />
+              </ErrorBoundary>
+            )}
+          </div>
+
+          {/* Mobile bottom tab bar */}
+          <div className="shrink-0 border-t border-border bg-[#0a0a0c] flex items-center mobile-tabs safe-area-bottom">
+            {mobileTabButtons.map((btn) => (
+              <button
+                key={btn.id}
+                onClick={() => setMobileView(btn.id)}
+                className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${
+                  mobileView === btn.id
+                    ? "text-accent"
+                    : "text-muted active:text-white"
+                }`}
+              >
+                <span className="text-lg leading-none">{btn.icon}</span>
+                <span className="text-[9px] leading-none font-medium">{btn.label}</span>
+                {btn.id === "files" && files.length > 0 && mobileView !== "files" && (
+                  <div className="absolute top-1 right-1/4 w-1.5 h-1.5 rounded-full bg-accent" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Desktop layout
   return (
     <>
       {globalOverlays}
       <div className="h-screen flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="flex items-center justify-between px-4 md:px-6 py-2.5 border-b border-border bg-surface">
+        <header className="flex items-center justify-between px-4 py-1.5 border-b border-border bg-surface shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-purple flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-accent/20">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-accent-purple flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-accent/20">
               OC
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-sm font-semibold text-white">OpenCode HCI</h1>
-              <p className="text-[10px] text-muted">Human-Centered Coding Agent</p>
+              <h1 className="text-xs font-semibold text-white leading-none">OpenCode</h1>
+              <p className="text-[9px] text-muted">AI Coding Environment</p>
             </div>
+            {phase !== "idle" && (
+              <div className="flex items-center gap-1.5 ml-2 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-[9px] text-green-400 font-medium">Running</span>
+              </div>
+            )}
           </div>
-          <ControlBar />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowPillars(!showPillars)}
+              className={`text-[10px] px-2 py-1 rounded transition-colors ${
+                showPillars ? "bg-accent/20 text-accent" : "text-muted hover:text-white"
+              }`}
+              title="Toggle HCI Dashboard (⌘B)"
+            >
+              📊 HCI
+            </button>
+            <button
+              onClick={() => setShowConsole(!showConsole)}
+              className={`text-[10px] px-2 py-1 rounded transition-colors ${
+                showConsole ? "bg-accent/20 text-accent" : "text-muted hover:text-white"
+              }`}
+              title="Toggle Console (⌘J)"
+            >
+              ⌨️ Console
+            </button>
+            <ControlBar />
+          </div>
         </header>
 
-        {/* Main Content — Desktop */}
+        {/* Streaming progress indicator */}
+        {isTyping && (
+          <div className="h-0.5 w-full bg-surface overflow-hidden shrink-0">
+            <div className="h-full bg-gradient-to-r from-accent via-accent-purple to-accent animate-progress-bar" />
+          </div>
+        )}
+
+        {/* HCI Dashboard — collapsible */}
+        {showPillars && (
+          <div className="border-b border-border shrink-0">
+            <PillarDashboard />
+          </div>
+        )}
+
+        {/* Main layout: icon bar + expandable panel + preview */}
         <div className="flex-1 flex overflow-hidden">
-          {/* Left: Chat — hidden on mobile when viewing other panels */}
-          <div className={`w-full md:w-[420px] md:min-w-[320px] border-r border-border flex flex-col ${
-            mobilePanel !== "chat" ? "hidden md:flex" : "flex"
-          }`}>
-            <ChatPanel />
+          {/* Icon sidebar */}
+          <div className="w-[52px] shrink-0 border-r border-border bg-[#0a0a0c] flex flex-col items-center pt-2 gap-1">
+            {sidebarButtons.map((btn) => (
+              <button
+                key={btn.id}
+                onClick={() => togglePanel(btn.id)}
+                className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all ${
+                  activePanel === btn.id
+                    ? "bg-accent/20 text-accent shadow-sm shadow-accent/10"
+                    : "text-muted hover:text-white hover:bg-surface-hover"
+                }`}
+                title={btn.label}
+              >
+                <span className="text-base leading-none">{btn.icon}</span>
+                <span className="text-[8px] leading-none font-medium">{btn.label}</span>
+              </button>
+            ))}
+            {files.length > 0 && activePanel !== "files" && (
+              <div className="absolute top-[134px] left-[38px] w-2 h-2 rounded-full bg-accent" />
+            )}
           </div>
 
-          {/* Right: Activity + Workspace — Desktop only OR mobile panel */}
-          <div className={`flex-1 flex-col overflow-hidden ${
-            mobilePanel === "chat" ? "hidden md:flex" : "flex"
-          }`}>
-            {/* Right panel tabs — Desktop */}
-            <div className="hidden md:flex items-center border-b border-border px-4 bg-surface">
-              <button
-                onClick={() => setRightTab("activity")}
-                className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${
-                  rightTab === "activity"
-                    ? "text-white border-accent"
-                    : "text-muted border-transparent hover:text-white"
-                }`}
-              >
-                ⚡ Activity Feed
-              </button>
-              <button
-                onClick={() => setRightTab("workspace")}
-                className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${
-                  rightTab === "workspace"
-                    ? "text-white border-accent"
-                    : "text-muted border-transparent hover:text-white"
-                }`}
-              >
-                💻 Workspace
-              </button>
-              {phase !== "idle" && (
-                <div className="ml-auto flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-[10px] text-muted">Live</span>
+          {/* Expandable side panel */}
+          {activePanel && (
+            <div className="w-80 min-w-[280px] max-w-[400px] border-r border-border flex flex-col shrink-0 animate-slide-in">
+              {/* Panel header */}
+              <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-surface shrink-0">
+                <span className="text-xs font-medium text-white">
+                  {activePanel === "build" && "🔨 Build"}
+                  {activePanel === "chat" && "💬 Chat"}
+                  {activePanel === "design" && "🎨 Design"}
+                  {activePanel === "files" && (
+                    <>
+                      📁 Files
+                      {files.length > 0 && (
+                        <span className="ml-1 text-[9px] bg-accent/20 text-accent px-1 rounded-full">
+                          {countFiles(files)}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </span>
+                <button
+                  onClick={() => setActivePanel(null)}
+                  className="text-muted hover:text-white text-xs px-1"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Panel content */}
+              <div className="flex-1 overflow-hidden">
+                <ErrorBoundary fallbackTitle="Chat panel error">
+                  <div className={activePanel === "build" ? "h-full" : "hidden"}>
+                    <ChatPanel mode="build" />
+                  </div>
+                  <div className={activePanel === "chat" ? "h-full" : "hidden"}>
+                    <ChatPanel mode="chat" />
+                  </div>
+                  <div className={activePanel === "design" ? "h-full" : "hidden"}>
+                    <ChatPanel mode="design" />
+                  </div>
+                </ErrorBoundary>
+                <ErrorBoundary fallbackTitle="File tree error">
+                  <div className={activePanel === "files" ? "h-full" : "hidden"}>
+                    <FileTree />
+                  </div>
+                </ErrorBoundary>
+              </div>
+            </div>
+          )}
+
+          {/* Main area: Preview (primary) + Code overlay */}
+          <div className="flex-1 flex flex-col overflow-hidden relative">
+            <div className="flex-1 flex overflow-hidden">
+              {/* Preview — always visible, takes full space */}
+              <div className="flex-1 min-w-0">
+                <ErrorBoundary fallbackTitle="Preview error">
+                  <PreviewPanel />
+                </ErrorBoundary>
+              </div>
+
+              {/* Code editor overlay — slides in from right */}
+              {showCodeOverlay && activeFile && (
+                <div className="w-[45%] min-w-[300px] max-w-[600px] border-l border-border shrink-0 flex flex-col bg-[#0e0e10] animate-slide-in">
+                  <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-surface shrink-0">
+                    <span className="text-[11px] font-medium text-white truncate">
+                      📄 {activeFile}
+                    </span>
+                    <button
+                      onClick={() => setShowCodeOverlay(false)}
+                      className="text-muted hover:text-white text-xs px-1.5 py-0.5 rounded hover:bg-surface-hover transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="flex-1 min-h-0">
+                    <ErrorBoundary fallbackTitle="Code editor error">
+                      <CodeEditor />
+                    </ErrorBoundary>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Mobile: show based on mobilePanel */}
-            <div className="flex-1 overflow-hidden md:hidden">
-              {mobilePanel === "activity" && <ActivityPanel />}
-              {mobilePanel === "workspace" && <WorkspacePanel />}
-            </div>
-
-            {/* Desktop: show based on rightTab */}
-            <div className="hidden md:flex flex-1 overflow-hidden">
-              {rightTab === "activity" ? <ActivityPanel /> : <WorkspacePanel />}
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom: Pillars — hidden on very small screens */}
-        <div className="hidden sm:block">
-          <PillarDashboard />
-        </div>
-
-        {/* Mobile Bottom Nav */}
-        <div className="sm:hidden border-t border-border bg-surface">
-          <div className="flex items-center justify-around py-2">
-            {([
-              { key: "chat" as const, icon: "💬", label: "Chat" },
-              { key: "activity" as const, icon: "⚡", label: "Activity" },
-              { key: "workspace" as const, icon: "💻", label: "Code" },
-            ]).map((item) => (
-              <button
-                key={item.key}
-                onClick={() => setMobilePanel(item.key)}
-                className={`flex flex-col items-center gap-0.5 px-4 py-1 rounded-lg transition-colors ${
-                  mobilePanel === item.key
-                    ? "text-accent"
-                    : "text-muted"
-                }`}
+            {/* BOTTOM: Console */}
+            {showConsole && (
+              <div
+                className="border-t border-border shrink-0"
+                style={{ height: `${bottomHeight}px` }}
               >
-                <span className="text-lg">{item.icon}</span>
-                <span className="text-[9px] font-medium">{item.label}</span>
-              </button>
-            ))}
+                <div className="flex items-center justify-between px-3 py-1 border-b border-border bg-surface">
+                  <span className="text-[10px] font-medium text-muted">CONSOLE</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setBottomHeight((h) => Math.min(400, h + 50))}
+                      className="text-[10px] text-muted hover:text-white px-1"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={() => setBottomHeight((h) => Math.max(80, h - 50))}
+                      className="text-[10px] text-muted hover:text-white px-1"
+                    >
+                      ↓
+                    </button>
+                    <button
+                      onClick={() => useStore.getState().clearTerminal()}
+                      className="text-[10px] text-muted hover:text-white px-1"
+                    >
+                      🗑
+                    </button>
+                  </div>
+                </div>
+                <ConsolePanel />
+              </div>
+            )}
           </div>
         </div>
       </div>
     </>
   );
+}
+
+function countFiles(nodes: FileNode[]): number {
+  let count = 0;
+  for (const n of nodes) {
+    if (n.type === "file") count++;
+    if (n.children) count += countFiles(n.children);
+  }
+  return count;
 }

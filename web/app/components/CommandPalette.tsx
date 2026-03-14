@@ -3,6 +3,7 @@
 import { useStore } from "../store";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { runMockAgent } from "../mock-agent";
+import { runStreamAgent } from "../stream-agent";
 import { SCENARIOS } from "../scenarios";
 
 interface Command {
@@ -34,7 +35,7 @@ export function CommandPalette() {
       label: `Demo: ${s.title}`,
       icon: s.icon,
       category: "Scenarios",
-      action: () => { reset(); setView("workspace"); setTimeout(() => runMockAgent(s.prompt, s.id), 100); },
+      action: async () => { reset(); setView("workspace"); const ok = await runStreamAgent(s.prompt, { scenarioId: s.id }); if (!ok) runMockAgent(s.prompt, s.id); },
     })),
     ...(phase === "coding" ? [
       { id: "pause", label: "Pause Agent", icon: "⏸", category: "Agent", action: () => togglePause() },

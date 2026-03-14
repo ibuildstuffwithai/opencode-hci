@@ -57,6 +57,10 @@
   to { opacity: 1; transform: translateX(0); }
 }
 
+.animate-slide-in {
+  animation: slideInRight 0.15s ease-out;
+}
+
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -70,4 +74,105 @@
 /* Smooth transitions for panel switches */
 .panel-transition {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile slide-up animation */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.25s ease-out;
+}
+
+/* Hide scrollbar on mobile bottom bar */
+.mobile-tabs::-webkit-scrollbar {
+  display: none;
+}
+.mobile-tabs {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Safe area for mobile notch/home indicator */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Slide out animation for panel close */
+@keyframes slideOutLeft {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-12px); }
+}
+
+.animate-slide-out {
+  animation: slideOutLeft 0.15s ease-in forwards;
+}
+
+/* Fade scale in for modals & overlays */
+@keyframes fadeScaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-scale-in {
+  animation: fadeScaleIn 0.2s ease-out;
+}
+
+/* Skeleton loading shimmer */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.15; }
+}
+
+.skeleton {
+  background: #6366f1;
+  border-radius: 6px;
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+/* Smooth content transitions */
+.content-transition {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Subtle hover lift effect */
+.hover-lift {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Focus ring for accessibility */
+.focus-ring:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* Stagger children fade-in */
+@keyframes staggerFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-children > * {
+  animation: staggerFadeIn 0.3s ease-out backwards;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+
+/* Progress bar animation */
+@keyframes progressBar {
+  0% { transform: translateX(-100%); width: 40%; }
+  50% { width: 60%; }
+  100% { transform: translateX(250%); width: 40%; }
+}
+.animate-progress-bar {
+  animation: progressBar 1.5s ease-in-out infinite;
 }

@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useStore } from "../store";
 import { exportSessionMarkdown } from "../mock-agent";
+import { SupportModal } from "./SupportModal";
+import { SaveProjectModal } from "./SaveProjectModal";
 
 export function ControlBar() {
   const phase = useStore((s) => s.phase);
@@ -19,6 +22,11 @@ export function ControlBar() {
   const addToast = useStore((s) => s.addToast);
   const setVerificationOpen = useStore((s) => s.setVerificationOpen);
   const testResults = useStore((s) => s.testResults);
+  const files = useStore((s) => s.files);
+  const messages = useStore((s) => s.messages);
+
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
 
   const phaseLabel: Record<string, string> = {
     idle: "Ready",
@@ -39,6 +47,62 @@ export function ControlBar() {
     a.click();
     URL.revokeObjectURL(url);
     addToast("success", "Session Exported", "Markdown report downloaded");
+  };
+
+  const handlePublish = async () => {
+    if (files.length === 0) {
+      addToast("warning", "No Files to Publish", "Create some files first");
+      return;
+    }
+
+    // Get project title from messages or use default
+    const projectTitle = messages.find(m => m.role === "user")?.content.slice(0, 50) || "OpenCode Project";
+    
+    const publishData = {
+      title: projectTitle,
+      description: `Created with OpenCode HCI - ${files.length} files`,
+      files: flattenFiles(files).map(f => ({
+        path: f.path,
+        content: f.content || ""
+      }))
+    };
+
+    try {
+      const response = await fetch('/api/publish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(publishData)
+      });
+
+      const result = await response.json();
+      
+      if (result.error) {
+        addToast("error", "Publish Failed", result.error);
+      } else {
+        // Copy URL to clipboard
+        await navigator.clipboard.writeText(result.fullUrl);
+        addToast("success", "Project Published!", `Link copied to clipboard: ${result.url}`);
+      }
+    } catch (error) {
+      console.error('Publish error:', error);
+      addToast("error", "Publish Failed", "Network error occurred");
+    }
+  };
+
+  // Helper function to flatten file tree
+  const flattenFiles = (nodes: any[]): any[] => {
+    let result: any[] = [];
+    for (const node of nodes) {
+      if (node.type === "file") {
+        result.push(node);
+      }
+      if (node.children) {
+        result = result.concat(flattenFiles(node.children));
+      }
+    }
+    return result;
   };
 
   return (
@@ -145,6 +209,32 @@ export function ControlBar() {
         </button>
       )}
 
+      {/* Publish */}
+      {files.length > 0 && (
+        <button
+          onClick={handlePublish}
+          className="px-2.5 py-1 rounded text-xs font-medium bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-indigo-300 hover:from-indigo-500/30 hover:to-purple-500/30 transition-all border border-indigo-500/30"
+        >
+          🌐 Publish
+        </button>
+      )}
+
+      {/* Get Support */}
+      <button
+        onClick={() => setSupportOpen(true)}
+        className="px-2.5 py-1 rounded text-xs font-medium bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 hover:from-amber-500/30 hover:to-orange-500/30 transition-all border border-amber-500/30"
+      >
+        🛟 Support
+      </button>
+
+      {/* Save */}
+      <button
+        onClick={() => setSaveOpen(true)}
+        className="px-2.5 py-1 rounded text-xs font-medium bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-all border border-emerald-500/30"
+      >
+        💾 Save
+      </button>
+
       {/* Reset */}
       <button
         onClick={() => reset()}
@@ -160,6 +250,10 @@ export function ControlBar() {
       >
         🏠
       </button>
+
+      {/* Modals */}
+      <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} />
+      <SaveProjectModal open={saveOpen} onClose={() => setSaveOpen(false)} />
     </div>
   );
 }

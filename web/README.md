@@ -81,6 +81,10 @@ npm start
 
 Open [http://localhost:3000](http://localhost:3000) and click **"▶ Quick Demo"** to see all 4 pillars in action.
 
+**Try the Publish feature:** After creating files, click the **"🌐 Publish"** button to generate a shareable link where anyone can view your project!
+
+**Need help?** Click the **"🛟 Support"** button in the toolbar to request live engineer assistance. Your session context is automatically included for faster resolution.
+
 ## Screenshots
 
 ### Landing Screen
@@ -113,6 +117,46 @@ Clean onboarding with the 4-pillar overview, recent projects, and quick demo acc
 - Click to expand: see formulas, descriptions, and coding DNA profile
 - Yellow pulsing glow for pillars awaiting action
 
+## Key Features
+
+### 🌐 Publish & Share
+- **One-click publishing:** Click the "🌐 Publish" button to instantly generate a unique shareable link
+- **Public project gallery:** Published projects get a permanent URL at `/p/[id]` where anyone can view the code
+- **No signup required:** Visitors can browse published projects without creating accounts
+- **Auto-generated stats:** View count tracking and project metadata
+- **Copy-to-clipboard:** Shareable links are automatically copied for easy sharing
+
+### 🔧 Advanced Code Editor
+- **Monaco Editor integration:** Full VS Code editing experience in the browser
+- **Multi-file support:** Tabbed interface with file tree navigation
+- **File management:** Create, delete, and rename files and folders via right-click context menu or toolbar buttons
+- **Inline editing:** Rename files/folders inline with keyboard support (Enter to confirm, Escape to cancel)
+- **Context menus:** Right-click any file or folder for quick actions (rename, delete, new file, new folder)
+- **Syntax highlighting:** Language-aware highlighting for TypeScript, JavaScript, HTML, CSS, and more
+- **Live editing:** Real-time file content updates with change tracking
+
+### 💾 Session Persistence
+- **Auto-save:** Sessions are automatically saved to localStorage every 30 seconds
+- **Save/Load projects:** Click "💾 Save" to name and save your project; load it from the landing screen
+- **Auto-save recovery:** If you close the tab mid-session, a recovery prompt appears on next visit
+- **Project management:** View, load, and delete saved projects from the landing screen
+- **Session history:** Browse previous coding sessions with full context
+- **Export functionality:** Download session reports as Markdown files
+- **Before-unload protection:** Session state is captured when closing the browser tab
+
+### 🛡️ Error Handling & Resilience
+- **React Error Boundaries:** Every major panel (chat, preview, code editor, file tree) is wrapped in error boundaries with graceful fallback UI — one panel crashing won't take down the whole app
+- **Network status detection:** Offline/online indicator appears automatically when connectivity changes
+- **Detailed error feedback:** API and streaming errors show specific toast notifications with actionable messages
+- **Error recovery:** Error boundary fallbacks include "Try Again" and "Copy Error" buttons for easy debugging
+- **Console logging:** All errors are logged to the terminal panel for visibility
+- **Stream error handling:** SSE streaming errors are caught and displayed inline without crashing the session
+
+### 📱 Responsive Design
+- **Mobile-optimized:** Adaptive layout that works on phones and tablets
+- **Flexible panels:** Collapsible sidebar panels for optimal screen real estate
+- **Touch-friendly controls:** Optimized for touch interaction
+
 ## Architecture
 
 ```
@@ -122,6 +166,9 @@ app/
 ├── mock-agent.ts         # Mock agent with realistic simulation
 ├── globals.css           # Tailwind + custom animations
 ├── layout.tsx            # Root layout with metadata
+├── lib/
+│   ├── parse-code.ts       # Code block parser
+│   └── persistence.ts      # localStorage save/load/autosave
 └── components/
     ├── LandingScreen.tsx    # Onboarding / start screen
     ├── ChatPanel.tsx        # Chat with markdown, reactions

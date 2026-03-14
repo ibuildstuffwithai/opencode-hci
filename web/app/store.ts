@@ -121,6 +121,18 @@ export interface Toast {
   duration?: number;
 }
 
+export type ErrorType = "network" | "api" | "rate-limit" | "generic";
+
+export interface ChatError {
+  id: string;
+  title: string;
+  message: string;
+  type: ErrorType;
+  timestamp: number;
+  retryMessage?: string;
+  retryOptions?: { mode?: string; imageData?: string; images?: string[] };
+}
+
 export interface SessionRecord {
   id: string;
   title: string;
@@ -197,6 +209,12 @@ interface AppState {
   addToast: (type: ToastType, title: string, message?: string, duration?: number) => void;
   removeToast: (id: string) => void;
 
+  // Chat errors (inline)
+  chatErrors: ChatError[];
+  addChatError: (title: string, message: string, type: ErrorType, retryMessage?: string, retryOptions?: ChatError["retryOptions"]) => void;
+  removeChatError: (id: string) => void;
+  clearChatErrors: () => void;
+
   // Session history
   sessions: SessionRecord[];
   addSession: (session: Omit<SessionRecord, "id">) => void;
@@ -219,9 +237,14 @@ interface AppState {
   redirectMessage: string;
   setRedirectMessage: (v: string) => void;
 
+  // Persistence
+  currentProjectId: string | null;
+  setCurrentProjectId: (id: string | null) => void;
+
   // Actions
   setInput: (v: string) => void;
   addMessage: (role: MessageRole, content: string, opts?: Partial<Message>) => void;
+  updateMessageContent: (id: string, content: string) => void;
   setReaction: (id: string, reaction: "up" | "down" | null) => void;
   setTyping: (v: boolean) => void;
   setThinkingLabel: (label: string) => void;
@@ -246,6 +269,9 @@ interface AppState {
   confirmAlignment: () => void;
   addBranch: (name: string) => void;
   switchBranch: (id: string) => void;
+  addFile: (parentPath: string | null, name: string, type: "file" | "folder") => void;
+  deleteFile: (path: string) => void;
+  renameFile: (path: string, newName: string) => void;
   touchFile: (path: string) => void;
   addOpenTab: (path: string) => void;
   closeTab: (path: string) => void;
@@ -356,12 +382,14 @@ export const useStore = create<AppState>((set, get) => ({
   detailLevel: 2,
   isPaused: false,
   toasts: [],
+  chatErrors: [],
   sessions: MOCK_SESSIONS,
   commandPaletteOpen: false,
   mobilePanel: "chat",
   verificationOpen: false,
   redirectMode: false,
   redirectMessage: "",
+  currentProjectId: null,
 
   setView: (v) => set({ view: v }),
 
@@ -376,6 +404,10 @@ export const useStore = create<AppState>((set, get) => ({
         ...s.preferences,
         interactionCount: s.preferences.interactionCount + (role === "user" ? 1 : 0),
       },
+    })),
+  updateMessageContent: (id, content) =>
+    set((s) => ({
+      messages: s.messages.map((m) => (m.id === id ? { ...m, content } : m)),
     })),
   setReaction: (id, reaction) =>
     set((s) => ({
@@ -453,6 +485,68 @@ export const useStore = create<AppState>((set, get) => ({
     }));
   },
   switchBranch: (id) => set({ activeBranch: id }),
+  addFile: (parentPath, name, type) =>
+    set((s) => {
+      const newNode: FileNode = {
+        name,
+        path: parentPath ? `${parentPath}/${name}` : name,
+        type,
+        ...(type === "folder" ? { children: [] } : { content: "" }),
+      };
+      if (!parentPath) {
+        return { files: [...s.files, newNode] };
+      }
+      const insertInto = (nodes: FileNode[]): FileNode[] =>
+        nodes.map((n) => {
+          if (n.path === parentPath && n.type === "folder") {
+            return { ...n, children: [...(n.children || []), newNode] };
+          }
+          if (n.children) return { ...n, children: insertInto(n.children) };
+          return n;
+        });
+      return { files: insertInto(s.files) };
+    }),
+  deleteFile: (path) =>
+    set((s) => {
+      const remove = (nodes: FileNode[]): FileNode[] =>
+        nodes.filter((n) => n.path !== path).map((n) =>
+          n.children ? { ...n, children: remove(n.children) } : n
+        );
+      const newFiles = remove(s.files);
+      const newTabs = s.openTabs.filter((t) => t !== path && !t.startsWith(path + "/"));
+      const newActive = s.activeFile === path || s.activeFile?.startsWith(path + "/")
+        ? newTabs[newTabs.length - 1] || null
+        : s.activeFile;
+      return { files: newFiles, openTabs: newTabs, activeFile: newActive };
+    }),
+  renameFile: (path, newName) =>
+    set((s) => {
+      const parentPath = path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "";
+      const newPath = parentPath ? `${parentPath}/${newName}` : newName;
+      const renamePaths = (nodes: FileNode[]): FileNode[] =>
+        nodes.map((n) => {
+          if (n.path === path) {
+            const updated = { ...n, name: newName, path: newPath };
+            if (n.children) {
+              const fixChildren = (children: FileNode[], oldBase: string, newBase: string): FileNode[] =>
+                children.map((c) => ({
+                  ...c,
+                  path: newBase + c.path.substring(oldBase.length),
+                  children: c.children ? fixChildren(c.children, oldBase, newBase) : undefined,
+                }));
+              updated.children = fixChildren(n.children, path, newPath);
+            }
+            return updated;
+          }
+          if (n.children) return { ...n, children: renamePaths(n.children) };
+          return n;
+        });
+      const newTabs = s.openTabs.map((t) =>
+        t === path ? newPath : t.startsWith(path + "/") ? newPath + t.substring(path.length) : t
+      );
+      const newActive = s.activeFile === path ? newPath : s.activeFile?.startsWith(path + "/") ? newPath + s.activeFile.substring(path.length) : s.activeFile;
+      return { files: renamePaths(s.files), openTabs: newTabs, activeFile: newActive };
+    }),
   touchFile: (path) =>
     set((s) => {
       const markTouched = (nodes: FileNode[]): FileNode[] =>
@@ -487,6 +581,17 @@ export const useStore = create<AppState>((set, get) => ({
   removeToast: (id) =>
     set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 
+  // Chat errors
+  addChatError: (title, message, type, retryMessage, retryOptions) => {
+    const id = uid();
+    set((s) => ({
+      chatErrors: [...s.chatErrors, { id, title, message, type, timestamp: Date.now(), retryMessage, retryOptions }],
+    }));
+  },
+  removeChatError: (id) =>
+    set((s) => ({ chatErrors: s.chatErrors.filter((e) => e.id !== id) })),
+  clearChatErrors: () => set({ chatErrors: [] }),
+
   // Sessions
   addSession: (session) =>
     set((s) => ({
@@ -505,6 +610,7 @@ export const useStore = create<AppState>((set, get) => ({
   // Redirect
   setRedirectMode: (v) => set({ redirectMode: v }),
   setRedirectMessage: (v) => set({ redirectMessage: v }),
+  setCurrentProjectId: (id) => set({ currentProjectId: id }),
 
   // Preferences
   updatePreferences: (p) =>
@@ -536,5 +642,7 @@ export const useStore = create<AppState>((set, get) => ({
       verificationOpen: false,
       redirectMode: false,
       redirectMessage: "",
+      currentProjectId: null,
+      chatErrors: [],
     }),
 }));
