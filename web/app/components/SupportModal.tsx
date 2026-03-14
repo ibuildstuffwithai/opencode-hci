@@ -59,11 +59,11 @@ export function SupportModal({ open, onClose }: SupportModalProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xl">🛟</span>
-              <h2 className="text-lg font-semibold text-white">Get Support</h2>
+              <h2 className="text-lg font-semibold text-foreground">Get Support</h2>
             </div>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-white transition-colors text-lg"
+              className="text-gray-400 hover:text-foreground transition-colors text-lg"
             >
               ×
             </button>
@@ -79,7 +79,7 @@ export function SupportModal({ open, onClose }: SupportModalProps) {
             <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">✅</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Request Submitted!</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Request Submitted!</h3>
             <p className="text-sm text-gray-400 mb-1">
               An engineer will review your session and reach out shortly.
             </p>
@@ -88,7 +88,7 @@ export function SupportModal({ open, onClose }: SupportModalProps) {
             </p>
             <button
               onClick={handleClose}
-              className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
+              className="px-6 py-2 bg-emerald-600 text-foreground rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
             >
               Got it
             </button>
@@ -105,7 +105,7 @@ export function SupportModal({ open, onClose }: SupportModalProps) {
                 value={issue}
                 onChange={(e) => setIssue(e.target.value)}
                 placeholder="Describe your issue or what you're trying to build..."
-                className="w-full bg-[#0e0e10] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-amber-500/50 transition-colors resize-none h-24"
+                className="w-full bg-background border border-gray-700 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-gray-500 outline-none focus:border-amber-500/50 transition-colors resize-none h-24"
                 autoFocus
               />
             </div>
@@ -146,12 +146,12 @@ export function SupportModal({ open, onClose }: SupportModalProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="w-full bg-[#0e0e10] border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-amber-500/50 transition-colors"
+                className="w-full bg-background border border-gray-700 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-gray-500 outline-none focus:border-amber-500/50 transition-colors"
               />
             </div>
 
             {/* Context info */}
-            <div className="bg-[#0e0e10] rounded-lg p-3 border border-gray-800">
+            <div className="bg-background rounded-lg p-3 border border-gray-800">
               <p className="text-xs text-gray-400 mb-2">📎 Session context will be included:</p>
               <div className="flex gap-4 text-xs text-gray-500">
                 <span>{messages.length} messages</span>
@@ -164,7 +164,7 @@ export function SupportModal({ open, onClose }: SupportModalProps) {
             <button
               onClick={handleSubmit}
               disabled={!issue.trim()}
-              className="w-full py-2.5 rounded-lg text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700"
+              className="w-full py-2.5 rounded-lg text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-amber-600 to-orange-600 text-foreground hover:from-amber-700 hover:to-orange-700"
             >
               🛟 Request Engineer Support
             </button>

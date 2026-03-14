@@ -14,7 +14,7 @@ export function TaskUnderstandingCard() {
         <div className="w-6 h-6 rounded-md bg-accent/20 flex items-center justify-center text-accent text-xs">
           📋
         </div>
-        <h3 className="text-sm font-semibold text-white">I understand you want:</h3>
+        <h3 className="text-sm font-semibold text-foreground">I understand you want:</h3>
         <span className="ml-auto text-xs text-accent font-medium px-2 py-0.5 rounded-full bg-accent/10">
           🎯 Alignment Check
         </span>
@@ -58,11 +58,11 @@ export function TaskUnderstandingCard() {
       <div className="flex gap-2">
         <button
           onClick={confirmAlignment}
-          className="flex-1 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent/90 transition-colors"
+          className="flex-1 py-2 rounded-lg bg-accent text-foreground text-sm font-medium hover:bg-accent/90 transition-colors"
         >
           ✓ Looks correct — proceed
         </button>
-        <button className="px-4 py-2 rounded-lg border border-border text-sm text-muted hover:text-white hover:bg-surface-hover transition-colors">
+        <button className="px-4 py-2 rounded-lg border border-border text-sm text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
           ✏️ Correct
         </button>
       </div>

@@ -7,9 +7,23 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Inline script to prevent flash of wrong theme
+  const themeScript = `
+    (function() {
+      try {
+        var t = localStorage.getItem('opencode-theme') || 'dark';
+        document.documentElement.classList.remove('dark', 'light');
+        document.documentElement.classList.add(t);
+      } catch(e) {}
+    })();
+  `;
+
   return (
-    <html lang="en" className="dark">
-      <body className="bg-background text-foreground font-sans antialiased">{children}</body>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="bg-background text-foreground font-sans antialiased transition-colors duration-200">{children}</body>
     </html>
   );
 }

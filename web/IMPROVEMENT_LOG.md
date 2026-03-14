@@ -60,6 +60,65 @@
 - Architecture diagram, tech stack table, design tokens
 - Contributing guidelines, mock mode explanation
 
+### 9. ✅ Export Project as ZIP
+- **Status:** Done
+- **Updated:** 2026-03-14
+- Added `jszip` dependency for client-side ZIP generation
+- 📦 ZIP button in ControlBar (visible when files exist)
+- Flattens entire file tree into a ZIP archive with correct paths
+- Downloads as `opencode-project-YYYY-MM-DD.zip`
+- Toast notification with file count on download
+- Styled with cyan/blue gradient to match other action buttons
+
+### 10. ✅ Keyboard Shortcuts Guide
+- **Status:** Done
+- **Updated:** 2026-03-14
+- `KeyboardShortcuts` component — modal overlay triggered by `?` key
+- Shows all shortcuts organized in 4 groups: General, Panels, Editor, Navigation
+- Styled kbd keys with dark backgrounds and borders
+- 2-column responsive grid layout
+- ❓ Help button in desktop header for discoverability
+- `toggleKeyboardShortcuts()` export for programmatic access
+- Closes on Escape or clicking outside
+
+### 11. ✅ Dark/Light Theme Toggle
+- **Status:** Done
+- **Updated:** 2026-03-14
+- CSS custom properties for all theme colors (background, foreground, surface, border, muted, accent)
+- Light theme with clean whites, soft grays, and adjusted accent colors
+- `toggleTheme()` in Zustand store with localStorage persistence
+- Inline script in `<head>` prevents flash of wrong theme on load
+- ☀️/🌙 toggle button in both desktop and mobile headers
+- All hardcoded dark colors (`#0a0a0c`, `#0e0e10`, `text-white`) replaced with CSS variable equivalents
+- Smooth `transition-colors duration-200` on body for theme switch animation
+- Scrollbar colors adapt to theme
+
+### 12. ✅ Resizable Panels with Drag Handles
+- **Status:** Done
+- **Updated:** 2026-03-14
+- `ResizeHandle` component with horizontal/vertical drag support
+- Side panel (Build/Chat/Design/Files) resizable by dragging right edge (220–600px)
+- Code editor overlay resizable by dragging left edge (250–800px)
+- Console/Terminal panel resizable by dragging top edge (80–500px)
+- Visual feedback: accent-colored indicator line appears on hover/drag
+- Cursor changes to col-resize/row-resize during drag
+- Text selection disabled during drag to prevent accidental highlighting
+- Removed old up/down arrow buttons for console resize (drag is more intuitive)
+
+### 13. ✅ Project Templates Gallery
+- **Status:** Done
+- **Updated:** 2026-03-14
+- `TemplateGallery` component — full-page template browser with search and category filters
+- 6 starter templates: Landing Page, Admin Dashboard, REST API, Real-time Chat, CLI Tool, Portfolio Site
+- Each template includes pre-built file scaffolds and an agent prompt
+- Click-to-expand detail view with file tree preview and prompt
+- "Use This Template" loads files into workspace and kicks off the agent
+- Category filter tabs (All, Frontend, Backend, Full Stack, Utility)
+- Difficulty badges (beginner/intermediate/advanced) with color coding
+- Search by title, description, or tags
+- Accessible from Landing Page ("📋 Templates" button) and Command Palette
+- `templates` view added to store's `AppView` type
+
 ---
 
 ## Deployment History
@@ -68,3 +127,8 @@
 |------|-------------|-----|
 | 2026-03-14 | Polish: animations, transitions, empty states, modal animations, skeleton loaders | https://web-five-smoky-69.vercel.app |
 | 2026-03-14 | Enhanced #6: ConfirmDialog for file delete, InlineError with retry in chat, streaming progress bar, API error classification | https://web-five-smoky-69.vercel.app |
+| 2026-03-14 | #9: Export Project as ZIP — client-side ZIP download with JSZip | https://web-five-smoky-69.vercel.app |
+| 2026-03-14 | #10: Keyboard Shortcuts Guide — ? key overlay with all hotkeys | https://web-five-smoky-69.vercel.app |
+| 2026-03-14 | #11: Dark/Light Theme Toggle — CSS vars, localStorage persistence, smooth transitions | https://web-five-smoky-69.vercel.app |
+| 2026-03-14 | #12: Resizable Panels — drag handles on side panel, code overlay, and console | https://web-five-smoky-69.vercel.app |
+| 2026-03-14 | #13: Project Templates Gallery — 6 starter templates with search, filters, file preview | https://web-five-smoky-69.vercel.app |

@@ -4,9 +4,12 @@ import { useStore, FileNode } from "./store";
 import { LandingScreen } from "./components/LandingScreen";
 import { ChatPanel } from "./components/ChatPanel";
 import { FileTree } from "./components/FileTree";
+import { RealFileTree } from "./components/RealFileTree";
 import { CodeEditor } from "./components/CodeEditor";
 import { PreviewPanel } from "./components/PreviewPanel";
 import { ConsolePanel } from "./components/ConsolePanel";
+import { TerminalPanel } from "./components/TerminalPanel";
+import { SessionManager } from "./components/SessionManager";
 import { PillarDashboard } from "./components/PillarDashboard";
 import { ControlBar } from "./components/ControlBar";
 import { ToastContainer } from "./components/ToastContainer";
@@ -17,7 +20,10 @@ import { HistoryPage } from "./components/HistoryPage";
 import { AutoSave } from "./components/AutoSave";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { NetworkStatus } from "./components/NetworkStatus";
-import { useState, useEffect, useCallback } from "react";
+import { KeyboardShortcuts, toggleKeyboardShortcuts } from "./components/KeyboardShortcuts";
+import { TemplateGallery } from "./components/TemplateGallery";
+import { ResizeHandle } from "./components/ResizeHandle";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
@@ -40,11 +46,29 @@ export default function Home() {
   const commandPaletteOpen = useStore((s) => s.commandPaletteOpen);
   const files = useStore((s) => s.files);
   const activeFile = useStore((s) => s.activeFile);
+  const theme = useStore((s) => s.theme);
+  const setTheme = useStore((s) => s.setTheme);
+  const toggleTheme = useStore((s) => s.toggleTheme);
+
+  // Load saved theme on mount
+  const themeLoaded = useRef(false);
+  useEffect(() => {
+    if (!themeLoaded.current) {
+      themeLoaded.current = true;
+      const saved = localStorage.getItem("opencode-theme") as "dark" | "light" | null;
+      if (saved && saved !== theme) {
+        setTheme(saved);
+      }
+    }
+  }, []);
   const [activePanel, setActivePanel] = useState<SidebarPanel>("build");
   const [showPillars, setShowPillars] = useState(false);
   const [bottomHeight, setBottomHeight] = useState(150);
   const [showConsole, setShowConsole] = useState(false);
   const [showCodeOverlay, setShowCodeOverlay] = useState(false);
+  const [consoleTab, setConsoleTab] = useState<"console" | "terminal">("console");
+  const [sidePanelWidth, setSidePanelWidth] = useState(320);
+  const [codeOverlayWidth, setCodeOverlayWidth] = useState(480);
   const isMobile = useIsMobile();
   const [mobileView, setMobileView] = useState<"preview" | "build" | "chat" | "files" | "code">("preview");
 
@@ -94,6 +118,7 @@ export default function Home() {
       <VerificationPanel />
       <AutoSave />
       <NetworkStatus />
+      <KeyboardShortcuts />
     </>
   );
 
@@ -114,6 +139,17 @@ export default function Home() {
         {globalOverlays}
         <ErrorBoundary fallbackTitle="Failed to load settings">
           <SettingsPage />
+        </ErrorBoundary>
+      </>
+    );
+  }
+
+  if (view === "templates") {
+    return (
+      <>
+        {globalOverlays}
+        <ErrorBoundary fallbackTitle="Failed to load templates">
+          <TemplateGallery />
         </ErrorBoundary>
       </>
     );
@@ -154,7 +190,7 @@ export default function Home() {
           {/* Mobile header */}
           <header className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-surface shrink-0">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-accent to-accent-purple flex items-center justify-center text-white font-bold text-[10px] shadow-lg shadow-accent/20">
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-accent to-accent-purple flex items-center justify-center text-foreground font-bold text-[10px] shadow-lg shadow-accent/20">
                 OC
               </div>
               {phase !== "idle" && (
@@ -164,7 +200,15 @@ export default function Home() {
                 </div>
               )}
             </div>
-            <ControlBar />
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => toggleTheme()}
+                className="text-[10px] px-1.5 py-0.5 rounded text-muted hover:text-foreground transition-colors"
+              >
+                {theme === "dark" ? "☀️" : "🌙"}
+              </button>
+              <ControlBar />
+            </div>
           </header>
 
           {/* Mobile content area */}
@@ -197,7 +241,7 @@ export default function Home() {
           </div>
 
           {/* Mobile bottom tab bar */}
-          <div className="shrink-0 border-t border-border bg-[#0a0a0c] flex items-center mobile-tabs safe-area-bottom">
+          <div className="shrink-0 border-t border-border bg-background flex items-center mobile-tabs safe-area-bottom">
             {mobileTabButtons.map((btn) => (
               <button
                 key={btn.id}
@@ -205,7 +249,7 @@ export default function Home() {
                 className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${
                   mobileView === btn.id
                     ? "text-accent"
-                    : "text-muted active:text-white"
+                    : "text-muted active:text-foreground"
                 }`}
               >
                 <span className="text-lg leading-none">{btn.icon}</span>
@@ -229,11 +273,11 @@ export default function Home() {
         {/* Header */}
         <header className="flex items-center justify-between px-4 py-1.5 border-b border-border bg-surface shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-accent-purple flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-accent/20">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-accent-purple flex items-center justify-center text-foreground font-bold text-xs shadow-lg shadow-accent/20">
               OC
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xs font-semibold text-white leading-none">OpenCode</h1>
+              <h1 className="text-xs font-semibold text-foreground leading-none">OpenCode</h1>
               <p className="text-[9px] text-muted">AI Coding Environment</p>
             </div>
             {phase !== "idle" && (
@@ -247,7 +291,7 @@ export default function Home() {
             <button
               onClick={() => setShowPillars(!showPillars)}
               className={`text-[10px] px-2 py-1 rounded transition-colors ${
-                showPillars ? "bg-accent/20 text-accent" : "text-muted hover:text-white"
+                showPillars ? "bg-accent/20 text-accent" : "text-muted hover:text-foreground"
               }`}
               title="Toggle HCI Dashboard (⌘B)"
             >
@@ -256,11 +300,25 @@ export default function Home() {
             <button
               onClick={() => setShowConsole(!showConsole)}
               className={`text-[10px] px-2 py-1 rounded transition-colors ${
-                showConsole ? "bg-accent/20 text-accent" : "text-muted hover:text-white"
+                showConsole ? "bg-accent/20 text-accent" : "text-muted hover:text-foreground"
               }`}
               title="Toggle Console (⌘J)"
             >
               ⌨️ Console
+            </button>
+            <button
+              onClick={() => toggleTheme()}
+              className="text-[10px] px-2 py-1 rounded text-muted hover:text-foreground transition-colors"
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
+            </button>
+            <button
+              onClick={() => toggleKeyboardShortcuts()}
+              className="text-[10px] px-2 py-1 rounded text-muted hover:text-foreground transition-colors"
+              title="Keyboard Shortcuts (?)"
+            >
+              ❓ Help
             </button>
             <ControlBar />
           </div>
@@ -283,7 +341,7 @@ export default function Home() {
         {/* Main layout: icon bar + expandable panel + preview */}
         <div className="flex-1 flex overflow-hidden">
           {/* Icon sidebar */}
-          <div className="w-[52px] shrink-0 border-r border-border bg-[#0a0a0c] flex flex-col items-center pt-2 gap-1">
+          <div className="w-[52px] shrink-0 border-r border-border bg-background flex flex-col items-center pt-2 gap-1">
             {sidebarButtons.map((btn) => (
               <button
                 key={btn.id}
@@ -291,7 +349,7 @@ export default function Home() {
                 className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all ${
                   activePanel === btn.id
                     ? "bg-accent/20 text-accent shadow-sm shadow-accent/10"
-                    : "text-muted hover:text-white hover:bg-surface-hover"
+                    : "text-muted hover:text-foreground hover:bg-surface-hover"
                 }`}
                 title={btn.label}
               >
@@ -306,10 +364,10 @@ export default function Home() {
 
           {/* Expandable side panel */}
           {activePanel && (
-            <div className="w-80 min-w-[280px] max-w-[400px] border-r border-border flex flex-col shrink-0 animate-slide-in">
+            <div className="border-r border-border flex flex-col shrink-0 animate-slide-in" style={{ width: `${sidePanelWidth}px`, minWidth: 220, maxWidth: 600 }}>
               {/* Panel header */}
               <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-surface shrink-0">
-                <span className="text-xs font-medium text-white">
+                <span className="text-xs font-medium text-foreground">
                   {activePanel === "build" && "🔨 Build"}
                   {activePanel === "chat" && "💬 Chat"}
                   {activePanel === "design" && "🎨 Design"}
@@ -326,7 +384,7 @@ export default function Home() {
                 </span>
                 <button
                   onClick={() => setActivePanel(null)}
-                  className="text-muted hover:text-white text-xs px-1"
+                  className="text-muted hover:text-foreground text-xs px-1"
                 >
                   ✕
                 </button>
@@ -346,12 +404,24 @@ export default function Home() {
                   </div>
                 </ErrorBoundary>
                 <ErrorBoundary fallbackTitle="File tree error">
-                  <div className={activePanel === "files" ? "h-full" : "hidden"}>
-                    <FileTree />
+                  <div className={activePanel === "files" ? "h-full flex flex-col" : "hidden"}>
+                    <SessionManager />
+                    <RealFileTree />
                   </div>
                 </ErrorBoundary>
               </div>
             </div>
+          )}
+
+          {/* Side panel resize handle */}
+          {activePanel && (
+            <ResizeHandle
+              direction="horizontal"
+              side="right"
+              onResize={(delta) =>
+                setSidePanelWidth((w) => Math.min(600, Math.max(220, w + delta)))
+              }
+            />
           )}
 
           {/* Main area: Preview (primary) + Code overlay */}
@@ -366,14 +436,23 @@ export default function Home() {
 
               {/* Code editor overlay — slides in from right */}
               {showCodeOverlay && activeFile && (
-                <div className="w-[45%] min-w-[300px] max-w-[600px] border-l border-border shrink-0 flex flex-col bg-[#0e0e10] animate-slide-in">
+                <ResizeHandle
+                  direction="horizontal"
+                  side="left"
+                  onResize={(delta) =>
+                    setCodeOverlayWidth((w) => Math.min(800, Math.max(250, w + delta)))
+                  }
+                />
+              )}
+              {showCodeOverlay && activeFile && (
+                <div className="border-l border-border shrink-0 flex flex-col bg-background animate-slide-in" style={{ width: `${codeOverlayWidth}px`, minWidth: 250, maxWidth: 800 }}>
                   <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-surface shrink-0">
-                    <span className="text-[11px] font-medium text-white truncate">
+                    <span className="text-[11px] font-medium text-foreground truncate">
                       📄 {activeFile}
                     </span>
                     <button
                       onClick={() => setShowCodeOverlay(false)}
-                      className="text-muted hover:text-white text-xs px-1.5 py-0.5 rounded hover:bg-surface-hover transition-colors"
+                      className="text-muted hover:text-foreground text-xs px-1.5 py-0.5 rounded hover:bg-surface-hover transition-colors"
                     >
                       ✕
                     </button>
@@ -387,36 +466,66 @@ export default function Home() {
               )}
             </div>
 
-            {/* BOTTOM: Console */}
+            {/* BOTTOM: Console / Terminal */}
+            {showConsole && (
+              <ResizeHandle
+                direction="vertical"
+                side="top"
+                onResize={(delta) =>
+                  setBottomHeight((h) => Math.min(500, Math.max(80, h + delta)))
+                }
+              />
+            )}
             {showConsole && (
               <div
-                className="border-t border-border shrink-0"
+                className="shrink-0 flex flex-col"
                 style={{ height: `${bottomHeight}px` }}
               >
-                <div className="flex items-center justify-between px-3 py-1 border-b border-border bg-surface">
-                  <span className="text-[10px] font-medium text-muted">CONSOLE</span>
+                <div className="flex items-center justify-between px-3 py-1 border-b border-border bg-surface shrink-0">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setConsoleTab("console")}
+                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded transition-colors ${
+                        consoleTab === "console" ? "bg-accent/20 text-accent" : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      CONSOLE
+                    </button>
+                    <button
+                      onClick={() => setConsoleTab("terminal")}
+                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded transition-colors ${
+                        consoleTab === "terminal" ? "bg-accent/20 text-accent" : "text-muted hover:text-foreground"
+                      }`}
+                    >
+                      TERMINAL
+                    </button>
+                  </div>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setBottomHeight((h) => Math.min(400, h + 50))}
-                      className="text-[10px] text-muted hover:text-white px-1"
+                      className="text-[10px] text-muted hover:text-foreground px-1"
                     >
                       ↑
                     </button>
                     <button
                       onClick={() => setBottomHeight((h) => Math.max(80, h - 50))}
-                      className="text-[10px] text-muted hover:text-white px-1"
+                      className="text-[10px] text-muted hover:text-foreground px-1"
                     >
                       ↓
                     </button>
-                    <button
-                      onClick={() => useStore.getState().clearTerminal()}
-                      className="text-[10px] text-muted hover:text-white px-1"
-                    >
-                      🗑
-                    </button>
+                    {consoleTab === "console" && (
+                      <button
+                        onClick={() => useStore.getState().clearTerminal()}
+                        className="text-[10px] text-muted hover:text-foreground px-1"
+                      >
+                        🗑
+                      </button>
+                    )}
                   </div>
                 </div>
-                <ConsolePanel />
+                <div className="flex-1 overflow-hidden">
+                  {consoleTab === "console" ? <ConsolePanel /> : <TerminalPanel />}
+                </div>
               </div>
             )}
           </div>

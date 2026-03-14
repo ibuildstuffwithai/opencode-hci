@@ -12,7 +12,7 @@ export function ConsolePanel() {
   }, [terminalOutput]);
 
   return (
-    <div className="h-full overflow-y-auto p-3 font-mono text-[11px] space-y-0.5 bg-[#0a0a0c]">
+    <div className="h-full overflow-y-auto p-3 font-mono text-[11px] space-y-0.5 bg-background">
       {terminalOutput.length === 0 ? (
         <p className="text-muted">
           <span className="text-accent">$</span> Ready for output...

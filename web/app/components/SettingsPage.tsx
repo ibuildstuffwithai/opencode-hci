@@ -20,13 +20,13 @@ export function SettingsPage() {
       <header className="flex items-center gap-3 px-6 py-4 border-b border-border bg-surface">
         <button
           onClick={() => setView("landing")}
-          className="text-muted hover:text-white transition-colors text-sm"
+          className="text-muted hover:text-foreground transition-colors text-sm"
         >
           ← Back
         </button>
         <div className="w-px h-4 bg-border" />
         <div>
-          <h1 className="text-sm font-semibold text-white">⚙️ Settings & Preferences</h1>
+          <h1 className="text-sm font-semibold text-foreground">⚙️ Settings & Preferences</h1>
           <p className="text-[10px] text-muted">Configure your coding DNA — the agent adapts to these</p>
         </div>
       </header>
@@ -35,7 +35,7 @@ export function SettingsPage() {
         <div className="max-w-2xl mx-auto space-y-8">
           {/* Coding Style */}
           <section>
-            <h2 className="text-sm font-semibold text-white mb-1">🧬 Coding DNA</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-1">🧬 Coding DNA</h2>
             <p className="text-xs text-muted mb-4">These preferences shape how the agent writes code for you</p>
 
             <div className="space-y-4">
@@ -49,8 +49,8 @@ export function SettingsPage() {
                       onClick={() => updatePreferences({ preferredLanguage: opt })}
                       className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
                         preferences.preferredLanguage === opt
-                          ? "bg-accent text-white shadow-lg shadow-accent/20"
-                          : "bg-surface border border-border text-muted hover:text-white hover:border-accent/30"
+                          ? "bg-accent text-foreground shadow-lg shadow-accent/20"
+                          : "bg-surface border border-border text-muted hover:text-foreground hover:border-accent/30"
                       }`}
                     >
                       {opt}
@@ -69,8 +69,8 @@ export function SettingsPage() {
                       onClick={() => updatePreferences({ framework: opt })}
                       className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
                         preferences.framework === opt
-                          ? "bg-accent text-white shadow-lg shadow-accent/20"
-                          : "bg-surface border border-border text-muted hover:text-white hover:border-accent/30"
+                          ? "bg-accent text-foreground shadow-lg shadow-accent/20"
+                          : "bg-surface border border-border text-muted hover:text-foreground hover:border-accent/30"
                       }`}
                     >
                       {opt}
@@ -89,8 +89,8 @@ export function SettingsPage() {
                       onClick={() => updatePreferences({ namingConvention: opt })}
                       className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
                         preferences.namingConvention === opt
-                          ? "bg-accent text-white shadow-lg shadow-accent/20"
-                          : "bg-surface border border-border text-muted hover:text-white hover:border-accent/30"
+                          ? "bg-accent text-foreground shadow-lg shadow-accent/20"
+                          : "bg-surface border border-border text-muted hover:text-foreground hover:border-accent/30"
                       }`}
                     >
                       {opt}
@@ -109,8 +109,8 @@ export function SettingsPage() {
                       onClick={() => updatePreferences({ codeStyle: opt })}
                       className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
                         preferences.codeStyle === opt
-                          ? "bg-accent text-white shadow-lg shadow-accent/20"
-                          : "bg-surface border border-border text-muted hover:text-white hover:border-accent/30"
+                          ? "bg-accent text-foreground shadow-lg shadow-accent/20"
+                          : "bg-surface border border-border text-muted hover:text-foreground hover:border-accent/30"
                       }`}
                     >
                       {opt}
@@ -129,8 +129,8 @@ export function SettingsPage() {
                       onClick={() => updatePreferences({ testingApproach: opt })}
                       className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
                         preferences.testingApproach === opt
-                          ? "bg-accent text-white shadow-lg shadow-accent/20"
-                          : "bg-surface border border-border text-muted hover:text-white hover:border-accent/30"
+                          ? "bg-accent text-foreground shadow-lg shadow-accent/20"
+                          : "bg-surface border border-border text-muted hover:text-foreground hover:border-accent/30"
                       }`}
                     >
                       {opt}
@@ -143,13 +143,13 @@ export function SettingsPage() {
 
           {/* Formatting */}
           <section>
-            <h2 className="text-sm font-semibold text-white mb-1">📐 Formatting</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-1">📐 Formatting</h2>
             <p className="text-xs text-muted mb-4">Fine-tune formatting preferences</p>
 
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-surface rounded-lg border border-border">
                 <div>
-                  <p className="text-xs font-medium text-white">Tab Size</p>
+                  <p className="text-xs font-medium text-foreground">Tab Size</p>
                   <p className="text-[10px] text-muted">Number of spaces per indent</p>
                 </div>
                 <div className="flex items-center gap-1">
@@ -159,8 +159,8 @@ export function SettingsPage() {
                       onClick={() => updatePreferences({ tabSize: n })}
                       className={`w-8 h-8 rounded-lg text-xs font-mono transition-all ${
                         preferences.tabSize === n
-                          ? "bg-accent text-white"
-                          : "bg-surface-hover text-muted hover:text-white"
+                          ? "bg-accent text-foreground"
+                          : "bg-surface-hover text-muted hover:text-foreground"
                       }`}
                     >
                       {n}
@@ -171,7 +171,7 @@ export function SettingsPage() {
 
               <div className="flex items-center justify-between p-3 bg-surface rounded-lg border border-border">
                 <div>
-                  <p className="text-xs font-medium text-white">Semicolons</p>
+                  <p className="text-xs font-medium text-foreground">Semicolons</p>
                   <p className="text-[10px] text-muted">Append semicolons to statements</p>
                 </div>
                 <button
@@ -190,7 +190,7 @@ export function SettingsPage() {
 
               <div className="flex items-center justify-between p-3 bg-surface rounded-lg border border-border">
                 <div>
-                  <p className="text-xs font-medium text-white">Trailing Commas</p>
+                  <p className="text-xs font-medium text-foreground">Trailing Commas</p>
                   <p className="text-[10px] text-muted">Add trailing commas in multi-line</p>
                 </div>
                 <button
@@ -211,7 +211,7 @@ export function SettingsPage() {
 
           {/* Learned Patterns */}
           <section>
-            <h2 className="text-sm font-semibold text-white mb-1">🧠 Learned Patterns</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-1">🧠 Learned Patterns</h2>
             <p className="text-xs text-muted mb-4">Patterns the agent has picked up from your interactions</p>
 
             {preferences.learnedPatterns.length === 0 ? (
@@ -238,7 +238,7 @@ export function SettingsPage() {
                 addToast("success", "Preferences Saved", "Your coding DNA has been updated");
                 setView("landing");
               }}
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-purple text-white text-sm font-medium hover:opacity-90 transition-opacity"
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-purple text-foreground text-sm font-medium hover:opacity-90 transition-opacity"
             >
               Save & Return
             </button>

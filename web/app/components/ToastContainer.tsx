@@ -37,7 +37,7 @@ function ToastItem({ id, type, title, message, timestamp }: {
     >
       <span className="text-sm mt-0.5">{style.icon}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white">{title}</p>
+        <p className="text-sm font-medium text-foreground">{title}</p>
         {message && <p className="text-xs text-muted mt-0.5">{message}</p>}
         <p className="text-[9px] text-muted mt-1">
           {new Date(timestamp).toLocaleTimeString()}
@@ -45,7 +45,7 @@ function ToastItem({ id, type, title, message, timestamp }: {
       </div>
       <button
         onClick={handleClose}
-        className="text-muted hover:text-white text-xs transition-colors p-1"
+        className="text-muted hover:text-foreground text-xs transition-colors p-1"
       >
         ✕
       </button>

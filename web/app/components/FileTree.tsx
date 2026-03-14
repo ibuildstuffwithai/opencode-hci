@@ -37,7 +37,7 @@ function InlineInput({
         else onCancel();
       }}
       placeholder={placeholder}
-      className="w-full bg-surface border border-accent/50 text-white text-xs px-1.5 py-0.5 rounded outline-none"
+      className="w-full bg-surface border border-accent/50 text-foreground text-xs px-1.5 py-0.5 rounded outline-none"
     />
   );
 }
@@ -79,7 +79,7 @@ function ContextMenu({
           className={`flex items-center gap-2 w-full text-left px-3 py-1.5 text-xs transition-colors ${
             item.danger
               ? "text-red-400 hover:bg-red-500/10"
-              : "text-muted hover:text-white hover:bg-surface-hover"
+              : "text-muted hover:text-foreground hover:bg-surface-hover"
           }`}
         >
           <span>{item.icon}</span>
@@ -156,7 +156,7 @@ function FileTreeItem({
           <button
             onClick={() => setOpen(!open)}
             onContextMenu={handleContextMenu}
-            className="flex items-center gap-1.5 w-full text-left px-2 py-1 text-xs text-muted hover:text-white hover:bg-surface-hover transition-colors group"
+            className="flex items-center gap-1.5 w-full text-left px-2 py-1 text-xs text-muted hover:text-foreground hover:bg-surface-hover transition-colors group"
             style={{ paddingLeft: `${depth * 14 + 8}px` }}
           >
             <span className="text-[10px] w-3 text-center">
@@ -165,7 +165,7 @@ function FileTreeItem({
             <span className="text-xs">{open ? "📂" : "📁"}</span>
             <span className="font-medium flex-1">{node.name}</span>
             <span
-              className="opacity-0 group-hover:opacity-100 text-[10px] text-muted hover:text-white px-1"
+              className="opacity-0 group-hover:opacity-100 text-[10px] text-muted hover:text-foreground px-1"
               onClick={(e) => {
                 e.stopPropagation();
                 setCreating("file");
@@ -261,10 +261,10 @@ function FileTreeItem({
           onContextMenu={handleContextMenu}
           className={`flex items-center gap-1.5 w-full text-left px-2 py-1 text-xs transition-colors group ${
             activeFile === node.path
-              ? "text-white bg-accent/15 border-r-2 border-accent"
+              ? "text-foreground bg-accent/15 border-r-2 border-accent"
               : node.touched
-              ? "text-emerald-400 hover:text-white hover:bg-surface-hover"
-              : "text-muted hover:text-white hover:bg-surface-hover"
+              ? "text-emerald-400 hover:text-foreground hover:bg-surface-hover"
+              : "text-muted hover:text-foreground hover:bg-surface-hover"
           }`}
           style={{ paddingLeft: `${depth * 14 + 8}px` }}
         >
@@ -313,7 +313,7 @@ export function FileTree() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setCreating("file")}
-            className="w-5 h-5 flex items-center justify-center rounded text-muted hover:text-white hover:bg-surface-hover transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded text-muted hover:text-foreground hover:bg-surface-hover transition-colors"
             title="New File"
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
@@ -322,7 +322,7 @@ export function FileTree() {
           </button>
           <button
             onClick={() => setCreating("folder")}
-            className="w-5 h-5 flex items-center justify-center rounded text-muted hover:text-white hover:bg-surface-hover transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded text-muted hover:text-foreground hover:bg-surface-hover transition-colors"
             title="New Folder"
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">

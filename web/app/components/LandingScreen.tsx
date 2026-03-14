@@ -108,7 +108,7 @@ export function LandingScreen() {
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent-purple flex items-center justify-center mx-auto mb-6 shadow-xl shadow-accent/20 hover-lift">
             <span className="text-3xl">🤖</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
             OpenCode <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-purple">HCI</span>
           </h1>
           <p className="text-muted text-base md:text-lg max-w-md mx-auto">
@@ -126,7 +126,7 @@ export function LandingScreen() {
           {PILLARS.map((p) => (
             <div key={p.name} className="bg-surface border border-border rounded-xl p-3 text-center hover:border-accent/30 transition-all hover-lift hover:shadow-lg hover:shadow-accent/5 group">
               <span className="text-2xl group-hover:scale-110 inline-block transition-transform">{p.icon}</span>
-              <p className="text-xs font-semibold text-white mt-2">{p.name}</p>
+              <p className="text-xs font-semibold text-foreground mt-2">{p.name}</p>
               <p className="text-[10px] text-muted mt-1">{p.desc}</p>
             </div>
           ))}
@@ -136,19 +136,25 @@ export function LandingScreen() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={handleStart}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-accent to-accent-purple text-white font-medium text-sm hover:opacity-90 transition-all hover:shadow-xl hover:shadow-accent/20"
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-accent to-accent-purple text-foreground font-medium text-sm hover:opacity-90 transition-all hover:shadow-xl hover:shadow-accent/20"
           >
             Start New Session
           </button>
           <button
+            onClick={() => setView("templates")}
+            className="px-6 py-3 rounded-xl border border-accent/30 text-foreground font-medium text-sm hover:bg-accent/10 transition-colors"
+          >
+            📋 Templates
+          </button>
+          <button
             onClick={() => setView("settings")}
-            className="px-6 py-3 rounded-xl border border-border text-white font-medium text-sm hover:bg-surface-hover transition-colors"
+            className="px-6 py-3 rounded-xl border border-border text-foreground font-medium text-sm hover:bg-surface-hover transition-colors"
           >
             ⚙️ Settings
           </button>
           <button
             onClick={() => setView("history")}
-            className="px-6 py-3 rounded-xl border border-border text-white font-medium text-sm hover:bg-surface-hover transition-colors"
+            className="px-6 py-3 rounded-xl border border-border text-foreground font-medium text-sm hover:bg-surface-hover transition-colors"
           >
             📊 History {sessions.length > 0 && <span className="text-accent ml-1">({sessions.length})</span>}
           </button>
@@ -166,7 +172,7 @@ export function LandingScreen() {
               >
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-lg group-hover:scale-110 transition-transform">{scenario.icon}</span>
-                  <span className="text-sm font-semibold text-white">{scenario.title}</span>
+                  <span className="text-sm font-semibold text-foreground">{scenario.title}</span>
                 </div>
                 <p className="text-[11px] text-muted leading-relaxed">{scenario.description}</p>
               </button>
@@ -185,7 +191,7 @@ export function LandingScreen() {
               <div className="flex gap-2">
                 <button
                   onClick={() => { clearAutoSave(); setAutoSaveData(null); }}
-                  className="px-3 py-1.5 rounded-lg text-xs text-muted hover:text-white transition-colors"
+                  className="px-3 py-1.5 rounded-lg text-xs text-muted hover:text-foreground transition-colors"
                 >
                   Dismiss
                 </button>
@@ -212,7 +218,7 @@ export function LandingScreen() {
                   className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-border hover:bg-surface-hover transition-colors text-left group"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-white group-hover:text-accent transition-colors truncate">{proj.name}</p>
+                    <p className="text-sm font-medium text-foreground group-hover:text-accent transition-colors truncate">{proj.name}</p>
                     <p className="text-[10px] text-muted truncate">{proj.description}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-3">

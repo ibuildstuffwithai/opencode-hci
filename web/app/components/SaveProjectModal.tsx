@@ -41,7 +41,7 @@ export function SaveProjectModal({ open, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-surface border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-fade-scale-in" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-bold text-white mb-4">💾 Save Project</h2>
+        <h2 className="text-lg font-bold text-foreground mb-4">💾 Save Project</h2>
 
         <div className="space-y-3">
           <div>
@@ -49,7 +49,7 @@ export function SaveProjectModal({ open, onClose }: Props) {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-accent transition-colors"
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-accent transition-colors"
               autoFocus
               onKeyDown={(e) => e.key === "Enter" && handleSave()}
             />
@@ -59,18 +59,18 @@ export function SaveProjectModal({ open, onClose }: Props) {
             <input
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-accent transition-colors"
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-accent transition-colors"
             />
           </div>
         </div>
 
         <div className="flex justify-end gap-2 mt-5">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-muted hover:text-white transition-colors">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-muted hover:text-foreground transition-colors">
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-accent to-accent-purple text-white hover:opacity-90 transition-opacity"
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-accent to-accent-purple text-foreground hover:opacity-90 transition-opacity"
           >
             {currentProjectId ? "Update" : "Save"}
           </button>

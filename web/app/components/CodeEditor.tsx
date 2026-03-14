@@ -47,7 +47,7 @@ export function CodeEditor() {
     <div className="flex flex-col h-full">
       {/* Tab bar */}
       {openTabs.length > 0 && (
-        <div className="flex items-center border-b border-border bg-[#0a0a0c] overflow-x-auto shrink-0">
+        <div className="flex items-center border-b border-border bg-background overflow-x-auto shrink-0">
           {openTabs.map((t) => {
             const name = t.split("/").pop() || t;
             return (
@@ -55,8 +55,8 @@ export function CodeEditor() {
                 key={t}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs cursor-pointer border-r border-border transition-colors shrink-0 ${
                   activeFile === t
-                    ? "bg-surface text-white"
-                    : "text-muted hover:text-white"
+                    ? "bg-surface text-foreground"
+                    : "text-muted hover:text-foreground"
                 }`}
                 onClick={() => setActiveFile(t)}
               >
@@ -69,7 +69,7 @@ export function CodeEditor() {
                     e.stopPropagation();
                     closeTab(t);
                   }}
-                  className="text-[10px] text-muted hover:text-white ml-1 opacity-0 group-hover:opacity-100"
+                  className="text-[10px] text-muted hover:text-foreground ml-1 opacity-0 group-hover:opacity-100"
                 >
                   ×
                 </button>

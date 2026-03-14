@@ -5,7 +5,8 @@ export type AgentPhase = "idle" | "understanding" | "proposing" | "coding" | "ve
 export type PillarStatus = "green" | "yellow" | "red" | "inactive";
 export type ActivityCategory = "search" | "write" | "test" | "fix" | "think" | "verify" | "info";
 export type Strategy = "conservative" | "balanced" | "aggressive";
-export type AppView = "landing" | "workspace" | "settings" | "history";
+export type AppView = "landing" | "workspace" | "settings" | "history" | "templates";
+export type Theme = "dark" | "light";
 export type ToastType = "success" | "error" | "warning" | "info";
 
 export interface Message {
@@ -237,6 +238,11 @@ interface AppState {
   redirectMessage: string;
   setRedirectMessage: (v: string) => void;
 
+  // Theme
+  theme: Theme;
+  setTheme: (t: Theme) => void;
+  toggleTheme: () => void;
+
   // Persistence
   currentProjectId: string | null;
   setCurrentProjectId: (id: string | null) => void;
@@ -390,6 +396,7 @@ export const useStore = create<AppState>((set, get) => ({
   redirectMode: false,
   redirectMessage: "",
   currentProjectId: null,
+  theme: "dark",
 
   setView: (v) => set({ view: v }),
 
@@ -611,6 +618,20 @@ export const useStore = create<AppState>((set, get) => ({
   setRedirectMode: (v) => set({ redirectMode: v }),
   setRedirectMessage: (v) => set({ redirectMessage: v }),
   setCurrentProjectId: (id) => set({ currentProjectId: id }),
+
+  // Theme
+  setTheme: (t) => {
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.remove("dark", "light");
+      document.documentElement.classList.add(t);
+      localStorage.setItem("opencode-theme", t);
+    }
+    set({ theme: t });
+  },
+  toggleTheme: () => {
+    const next = get().theme === "dark" ? "light" : "dark";
+    get().setTheme(next as Theme);
+  },
 
   // Preferences
   updatePreferences: (p) =>

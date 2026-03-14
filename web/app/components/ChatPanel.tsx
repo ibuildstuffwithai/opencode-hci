@@ -2,7 +2,6 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import { useStore, Message } from "../store";
-import { runMockAgent } from "../mock-agent";
 import { runStreamAgent } from "../stream-agent";
 import { SCENARIOS } from "../scenarios";
 import { TaskUnderstandingCard } from "./TaskUnderstandingCard";
@@ -24,7 +23,7 @@ function MessageBubble({ msg }: { msg: Message }) {
       if (line.startsWith("```")) {
         if (inCodeBlock) {
           result.push(
-            <pre key={`code-${i}`} className="bg-[#0a0a0c] rounded-lg p-3 my-2 overflow-x-auto text-[11px] font-mono text-gray-300 border border-border">
+            <pre key={`code-${i}`} className="bg-background rounded-lg p-3 my-2 overflow-x-auto text-[11px] font-mono text-gray-300 border border-border">
               {codeLines.join("\n")}
             </pre>
           );
@@ -43,7 +42,7 @@ function MessageBubble({ msg }: { msg: Message }) {
       const parts = line.split(/(\*\*[^*]+\*\*)/g);
       const rendered = parts.map((part, j) => {
         if (part.startsWith("**") && part.endsWith("**")) {
-          return <strong key={j} className="font-semibold text-white">{part.slice(2, -2)}</strong>;
+          return <strong key={j} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>;
         }
         const codeParts = part.split(/(`[^`]+`)/g);
         return codeParts.map((cp, k) => {
@@ -78,7 +77,7 @@ function MessageBubble({ msg }: { msg: Message }) {
         <div
           className={`rounded-xl px-4 py-2.5 text-sm leading-relaxed ${
             isUser
-              ? "bg-accent text-white"
+              ? "bg-accent text-foreground"
               : "bg-surface border border-border text-gray-200"
           }`}
         >
@@ -99,7 +98,7 @@ function MessageBubble({ msg }: { msg: Message }) {
             <button
               onClick={() => setReaction(msg.id, msg.reaction === "up" ? null : "up")}
               className={`text-xs px-1.5 py-0.5 rounded transition-all ${
-                msg.reaction === "up" ? "bg-green-500/20 text-green-400 scale-110" : "text-muted hover:text-white"
+                msg.reaction === "up" ? "bg-green-500/20 text-green-400 scale-110" : "text-muted hover:text-foreground"
               }`}
             >
               👍
@@ -107,7 +106,7 @@ function MessageBubble({ msg }: { msg: Message }) {
             <button
               onClick={() => setReaction(msg.id, msg.reaction === "down" ? null : "down")}
               className={`text-xs px-1.5 py-0.5 rounded transition-all ${
-                msg.reaction === "down" ? "bg-red-500/20 text-red-400 scale-110" : "text-muted hover:text-white"
+                msg.reaction === "down" ? "bg-red-500/20 text-red-400 scale-110" : "text-muted hover:text-foreground"
               }`}
             >
               👎
@@ -183,13 +182,8 @@ export function ChatPanel({ mode = "build" }: ChatPanelProps) {
     if (!msg && attachments.length === 0) return;
     const effectiveMode = mode === "design" ? "design" : mode;
     const images = attachments.length > 0 ? [...attachments] : undefined;
-    const ok = await runStreamAgent(msg || "Build this from the uploaded image", { mode: effectiveMode, imageData: images?.[0], images });
+    await runStreamAgent(msg || "Build this from the uploaded image", { mode: effectiveMode, imageData: images?.[0], images });
     setAttachments([]);
-    if (!ok) {
-      const s = useStore.getState();
-      useStore.setState({ messages: s.messages.slice(0, -1) });
-      runMockAgent(msg || "Build this");
-    }
   };
 
   const handleKey = (e: React.KeyboardEvent) => {
@@ -209,7 +203,7 @@ export function ChatPanel({ mode = "build" }: ChatPanelProps) {
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent-purple flex items-center justify-center mb-4 shadow-xl shadow-accent/20">
               <span className="text-2xl">🤖</span>
             </div>
-            <h2 className="text-lg font-semibold text-white mb-1">
+            <h2 className="text-lg font-semibold text-foreground mb-1">
               {mode === "build" && "What would you like to build?"}
               {mode === "chat" && "Ask about your code"}
               {mode === "design" && "Design a UI"}
@@ -226,10 +220,9 @@ export function ChatPanel({ mode = "build" }: ChatPanelProps) {
                     key={s.id}
                     onClick={async () => {
                       reset();
-                      const ok = await runStreamAgent(s.prompt, { scenarioId: s.id, mode: "build" });
-                      if (!ok) runMockAgent(s.prompt, s.id);
+                      await runStreamAgent(s.prompt, { scenarioId: s.id, mode: "build" });
                     }}
-                    className="w-full text-left px-3 py-2.5 text-sm rounded-lg border border-border hover:bg-surface-hover hover:border-accent/20 text-muted hover:text-white transition-all flex items-center gap-2 group"
+                    className="w-full text-left px-3 py-2.5 text-sm rounded-lg border border-border hover:bg-surface-hover hover:border-accent/20 text-muted hover:text-foreground transition-all flex items-center gap-2 group"
                   >
                     <span className="group-hover:scale-110 transition-transform">{s.icon}</span>
                     <span>{s.title}</span>
@@ -260,10 +253,7 @@ export function ChatPanel({ mode = "build" }: ChatPanelProps) {
               err.retryMessage
                 ? async () => {
                     removeChatError(err.id);
-                    const ok = await runStreamAgent(err.retryMessage!, err.retryOptions as Parameters<typeof runStreamAgent>[1]);
-                    if (!ok) {
-                      runMockAgent(err.retryMessage!);
-                    }
+                    await runStreamAgent(err.retryMessage!, err.retryOptions as Parameters<typeof runStreamAgent>[1]);
                   }
                 : undefined
             }
@@ -299,7 +289,7 @@ export function ChatPanel({ mode = "build" }: ChatPanelProps) {
               className={`text-[10px] px-2 py-0.5 rounded-full transition-all capitalize ${
                 strategy === s
                   ? "bg-accent/20 text-accent font-medium shadow-sm shadow-accent/10"
-                  : "text-muted hover:text-white"
+                  : "text-muted hover:text-foreground"
               }`}
             >
               {s}
@@ -345,7 +335,7 @@ export function ChatPanel({ mode = "build" }: ChatPanelProps) {
                 <img src={src} alt={`Attachment ${i + 1}`} className="w-full h-full object-cover" />
                 <button
                   onClick={() => removeAttachment(i)}
-                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-foreground text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                 >
                   ✕
                 </button>
@@ -366,12 +356,12 @@ export function ChatPanel({ mode = "build" }: ChatPanelProps) {
               "Ask a question..."
             }
             rows={4}
-            className="w-full bg-transparent resize-none text-sm text-white placeholder:text-muted outline-none px-3 py-3 min-h-[100px] max-h-[250px]"
+            className="w-full bg-transparent resize-none text-sm text-foreground placeholder:text-muted outline-none px-3 py-3 min-h-[100px] max-h-[250px]"
           />
           <div className="flex items-center justify-between px-2 pb-2">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-7 h-7 rounded-lg text-muted hover:text-white hover:bg-surface-hover flex items-center justify-center transition-colors"
+              className="w-7 h-7 rounded-lg text-muted hover:text-foreground hover:bg-surface-hover flex items-center justify-center transition-colors"
               title="Attach image"
               type="button"
             >
@@ -380,7 +370,7 @@ export function ChatPanel({ mode = "build" }: ChatPanelProps) {
             <button
               onClick={handleSend}
               disabled={(!inputValue.trim() && attachments.length === 0) || isTyping}
-              className="w-8 h-8 rounded-lg bg-accent text-white flex items-center justify-center hover:bg-accent/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="w-8 h-8 rounded-lg bg-accent text-foreground flex items-center justify-center hover:bg-accent/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>

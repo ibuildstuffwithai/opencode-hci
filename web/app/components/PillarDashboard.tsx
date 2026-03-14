@@ -50,7 +50,7 @@ export function PillarDashboard() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1">
                       <span className="text-xs">{cfg.icon}</span>
-                      <span className="text-xs font-semibold text-white">{cfg.label}</span>
+                      <span className="text-xs font-semibold text-foreground">{cfg.label}</span>
                       <span className="ml-auto text-xs font-mono text-muted">
                         {p.score > 0 ? Math.round(p.score * 100) + "%" : "—"}
                       </span>
@@ -67,7 +67,7 @@ export function PillarDashboard() {
 
                 {/* Expanded detail */}
                 {isExpanded && (
-                  <div className="mt-1 mx-2 p-3 bg-[#0a0a0c] rounded-lg border border-border animate-fade-in">
+                  <div className="mt-1 mx-2 p-3 bg-background rounded-lg border border-border animate-fade-in">
                     <p className="text-[10px] text-muted mb-1">{cfg.description}</p>
                     <p className="text-[10px] font-mono text-accent">{cfg.formula}</p>
                     {cfg.key === "adaptability" && preferences.learnedPatterns.length > 0 && (

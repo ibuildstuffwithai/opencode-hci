@@ -19,7 +19,7 @@ function FileTreeItem({ node, depth = 0 }: { node: FileNode; depth?: number }) {
       <div>
         <button
           onClick={() => setOpen(!open)}
-          className="flex items-center gap-1.5 w-full text-left px-2 py-1 text-xs text-muted hover:text-white transition-colors"
+          className="flex items-center gap-1.5 w-full text-left px-2 py-1 text-xs text-muted hover:text-foreground transition-colors"
           style={{ paddingLeft: `${depth * 12 + 8}px` }}
         >
           <span className="text-[10px]">{open ? "▼" : "▶"}</span>
@@ -39,10 +39,10 @@ function FileTreeItem({ node, depth = 0 }: { node: FileNode; depth?: number }) {
       onClick={() => setActiveFile(node.path)}
       className={`flex items-center gap-1.5 w-full text-left px-2 py-1 text-xs transition-colors ${
         activeFile === node.path
-          ? "text-white bg-accent/10"
+          ? "text-foreground bg-accent/10"
           : node.touched
-          ? "text-emerald-400 hover:text-white"
-          : "text-muted hover:text-white"
+          ? "text-emerald-400 hover:text-foreground"
+          : "text-muted hover:text-foreground"
       }`}
       style={{ paddingLeft: `${depth * 12 + 8}px` }}
     >
@@ -96,8 +96,8 @@ export function WorkspacePanel() {
               onClick={() => setTab(t.key)}
               className={`px-3 py-2 text-xs font-medium transition-colors border-b-2 ${
                 tab === t.key
-                  ? "text-white border-accent"
-                  : "text-muted border-transparent hover:text-white"
+                  ? "text-foreground border-accent"
+                  : "text-muted border-transparent hover:text-foreground"
               }`}
             >
               {t.label}
@@ -123,7 +123,7 @@ export function WorkspacePanel() {
 
         {/* Open file tabs */}
         {tab === "editor" && openTabs.length > 0 && (
-          <div className="flex items-center border-b border-border bg-[#0a0a0c] overflow-x-auto">
+          <div className="flex items-center border-b border-border bg-background overflow-x-auto">
             {openTabs.map((t) => {
               const name = t.split("/").pop() || t;
               return (
@@ -131,8 +131,8 @@ export function WorkspacePanel() {
                   key={t}
                   className={`flex items-center gap-1 px-3 py-1.5 text-xs cursor-pointer border-r border-border transition-colors ${
                     activeFile === t
-                      ? "bg-surface text-white"
-                      : "text-muted hover:text-white"
+                      ? "bg-surface text-foreground"
+                      : "text-muted hover:text-foreground"
                   }`}
                   onClick={() => setActiveFile(t)}
                 >
@@ -142,7 +142,7 @@ export function WorkspacePanel() {
                       e.stopPropagation();
                       closeTab(t);
                     }}
-                    className="text-[10px] text-muted hover:text-white ml-1"
+                    className="text-[10px] text-muted hover:text-foreground ml-1"
                   >
                     ×
                   </button>
@@ -186,7 +186,7 @@ export function WorkspacePanel() {
           )}
 
           {tab === "terminal" && (
-            <div className="h-full overflow-y-auto p-4 font-mono text-xs space-y-0.5 bg-[#0a0a0c]">
+            <div className="h-full overflow-y-auto p-4 font-mono text-xs space-y-0.5 bg-background">
               {terminalOutput.length === 0 ? (
                 <p className="text-muted">Agent output will appear here...</p>
               ) : (
@@ -227,7 +227,7 @@ export function WorkspacePanel() {
                   {diffs.map((d, i) => (
                     <div key={i} className="rounded-lg border border-border bg-surface p-3">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-white font-mono">
+                        <span className="text-sm font-medium text-foreground font-mono">
                           {d.file}
                         </span>
                         <span className="text-xs">

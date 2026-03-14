@@ -7,6 +7,9 @@
 import { NextRequest } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 
+export const maxDuration = 60
+export const dynamic = 'force-dynamic'
+
 const SYSTEM_PROMPT = `You are OpenCode, an AI coding agent in a Replit-style IDE. You generate working code that renders in a live preview.
 
 When the user asks you to build something, OUTPUT CODE FILES using this format:
@@ -34,14 +37,15 @@ console.log("hello");
 \`\`\`
 
 RULES:
+- ALWAYS generate vanilla HTML/CSS/JS — NEVER use React, JSX, TSX, Vue, or any framework
 - Always generate an index.html as the main entry point
 - Make HTML files self-contained OR reference styles.css and script.js
 - Use modern CSS (flexbox, grid, custom properties)
-- Write clean, working code — the preview renders immediately
+- Write clean, working code — the preview renders immediately in an iframe
 - Keep explanations brief — let the code speak
-- For complex apps, split into multiple files
-- Default to vanilla HTML/CSS/JS unless a framework is requested
-- Make it visually polished — good colors, spacing, typography`
+- For complex apps, split into index.html + styles.css + script.js
+- Make it visually polished — good colors, spacing, typography
+- If the user asks for React/Vue, still output vanilla HTML/JS that achieves the same result`
 
 interface ChatMessage {
   role: 'user' | 'assistant'

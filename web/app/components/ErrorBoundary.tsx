@@ -40,7 +40,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return (
         <div className="flex flex-col items-center justify-center h-full p-6 bg-surface/50 rounded-xl border border-red-500/20 m-2">
           <div className="text-2xl mb-2">⚠️</div>
-          <h3 className="text-sm font-semibold text-white mb-1">{title}</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-1">{title}</h3>
           <p className="text-xs text-muted text-center max-w-xs mb-3">
             {this.state.error?.message || "An unexpected error occurred"}
           </p>
@@ -56,14 +56,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 const details = `${this.state.error?.message}\n\n${this.state.errorInfo?.componentStack || ""}`;
                 navigator.clipboard.writeText(details);
               }}
-              className="px-3 py-1.5 text-xs bg-surface-hover text-muted rounded-lg hover:text-white transition-colors"
+              className="px-3 py-1.5 text-xs bg-surface-hover text-muted rounded-lg hover:text-foreground transition-colors"
             >
               Copy Error
             </button>
           </div>
           {this.state.errorInfo && (
             <details className="mt-3 w-full max-w-sm">
-              <summary className="text-[10px] text-muted cursor-pointer hover:text-white">
+              <summary className="text-[10px] text-muted cursor-pointer hover:text-foreground">
                 Stack trace
               </summary>
               <pre className="text-[9px] text-red-400/70 mt-1 p-2 bg-black/30 rounded overflow-auto max-h-32 whitespace-pre-wrap">

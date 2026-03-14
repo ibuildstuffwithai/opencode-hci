@@ -29,11 +29,11 @@ export function VerificationPanel() {
               <span className="text-sm">✅</span>
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-white">Verification Report</h2>
+              <h2 className="text-sm font-semibold text-foreground">Verification Report</h2>
               <p className="text-[10px] text-muted">Pillar 3: Proof of correctness</p>
             </div>
           </div>
-          <button onClick={() => setOpen(false)} className="text-muted hover:text-white text-sm transition-colors p-1">
+          <button onClick={() => setOpen(false)} className="text-muted hover:text-foreground text-sm transition-colors p-1">
             ✕
           </button>
         </div>
@@ -85,8 +85,8 @@ export function VerificationPanel() {
             </div>
             <div className="space-y-2">
               {diffs.map((d, i) => (
-                <div key={i} className="flex items-center gap-3 px-3 py-2 bg-[#0a0a0c] rounded-lg border border-border">
-                  <span className="text-xs font-mono text-white flex-1 truncate">{d.file}</span>
+                <div key={i} className="flex items-center gap-3 px-3 py-2 bg-background rounded-lg border border-border">
+                  <span className="text-xs font-mono text-foreground flex-1 truncate">{d.file}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-emerald-400 font-mono">+{d.additions}</span>
                     <span className="text-[10px] text-red-400 font-mono">-{d.deletions}</span>
@@ -115,10 +115,10 @@ export function VerificationPanel() {
                   adaptability: "from-orange-500 to-yellow-500",
                 };
                 return (
-                  <div key={key} className="bg-[#0a0a0c] rounded-lg border border-border p-3">
+                  <div key={key} className="bg-background rounded-lg border border-border p-3">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-xs">{icons[key]}</span>
-                      <span className="text-xs font-semibold text-white capitalize">{key}</span>
+                      <span className="text-xs font-semibold text-foreground capitalize">{key}</span>
                       <span className="ml-auto text-xs font-mono text-muted">{Math.round(p.score * 100)}%</span>
                     </div>
                     <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
@@ -139,13 +139,13 @@ export function VerificationPanel() {
         <div className="px-6 py-3 border-t border-border flex items-center justify-end gap-3">
           <button
             onClick={() => setOpen(false)}
-            className="px-4 py-2 rounded-lg text-sm text-muted hover:text-white border border-border hover:bg-surface-hover transition-colors"
+            className="px-4 py-2 rounded-lg text-sm text-muted hover:text-foreground border border-border hover:bg-surface-hover transition-colors"
           >
             Close
           </button>
           <button
             onClick={() => setOpen(false)}
-            className="px-4 py-2 rounded-lg text-sm text-white bg-accent hover:bg-accent/90 transition-colors"
+            className="px-4 py-2 rounded-lg text-sm text-foreground bg-accent hover:bg-accent/90 transition-colors"
           >
             Accept & Continue
           </button>

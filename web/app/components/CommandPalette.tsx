@@ -29,6 +29,7 @@ export function CommandPalette() {
     { id: "workspace", label: "Open Workspace", icon: "💻", category: "Navigation", action: () => setView("workspace") },
     { id: "settings", label: "Open Settings", icon: "⚙️", category: "Navigation", action: () => setView("settings") },
     { id: "history", label: "Session History", icon: "📊", category: "Navigation", action: () => setView("history") },
+    { id: "templates", label: "Project Templates", icon: "📋", category: "Navigation", action: () => setView("templates") },
     { id: "reset", label: "Reset Session", icon: "🔄", category: "Actions", action: () => reset() },
     ...SCENARIOS.map((s) => ({
       id: `scenario-${s.id}`,
@@ -102,7 +103,7 @@ export function CommandPalette() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a command..."
-            className="flex-1 bg-transparent text-sm text-white placeholder:text-muted outline-none"
+            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted outline-none"
           />
           <kbd className="text-[10px] text-muted bg-surface-hover px-1.5 py-0.5 rounded">ESC</kbd>
         </div>
@@ -127,7 +128,7 @@ export function CommandPalette() {
                         onClick={() => execute(cmd)}
                         onMouseEnter={() => setSelectedIdx(idx)}
                         className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-colors ${
-                          idx === selectedIdx ? "bg-accent/10 text-white" : "text-gray-300 hover:bg-surface-hover"
+                          idx === selectedIdx ? "bg-accent/10 text-foreground" : "text-gray-300 hover:bg-surface-hover"
                         }`}
                       >
                         <span className="text-sm">{cmd.icon}</span>

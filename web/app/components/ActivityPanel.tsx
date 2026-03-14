@@ -71,7 +71,7 @@ export function ActivityPanel() {
           <div className="px-4 pt-3 pb-1">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] font-medium text-muted uppercase tracking-wider">Task Progress</span>
-              <span className="text-[11px] font-mono text-white">{progressPercent}%</span>
+              <span className="text-[11px] font-mono text-foreground">{progressPercent}%</span>
             </div>
             <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
               <div
@@ -92,7 +92,7 @@ export function ActivityPanel() {
                 <div key={key} className="bg-surface rounded-lg px-2 py-1.5 border border-border">
                   <div className="flex items-center gap-1">
                     <span className="text-[10px]">{icons[key]}</span>
-                    <span className="text-[10px] font-semibold text-white capitalize">{key.slice(0, 5)}</span>
+                    <span className="text-[10px] font-semibold text-foreground capitalize">{key.slice(0, 5)}</span>
                     <span className="ml-auto text-[10px] font-mono text-muted">
                       {p.score > 0 ? Math.round(p.score * 100) + "%" : "—"}
                     </span>
@@ -140,7 +140,7 @@ export function ActivityPanel() {
                   )}
                 </button>
                 {entry.expanded && entry.detail && (
-                  <div className="ml-20 mr-2 mb-2 px-3 py-2 bg-[#0a0a0c] rounded-lg border border-border">
+                  <div className="ml-20 mr-2 mb-2 px-3 py-2 bg-background rounded-lg border border-border">
                     <pre className="text-[11px] text-gray-400 font-mono whitespace-pre-wrap">{entry.detail}</pre>
                   </div>
                 )}
@@ -154,7 +154,7 @@ export function ActivityPanel() {
         {testResults && (
           <div className="px-4 py-2 border-t border-border bg-surface">
             <div className="flex items-center gap-3">
-              <span className="text-xs font-medium text-white">Test Results</span>
+              <span className="text-xs font-medium text-foreground">Test Results</span>
               <span className="text-xs text-green-400">{testResults.passed} passed</span>
               {testResults.failed > 0 && <span className="text-xs text-red-400">{testResults.failed} failed</span>}
               {testResults.coverage !== undefined && (

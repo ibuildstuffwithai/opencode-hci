@@ -24,7 +24,7 @@ export function ApproachSelector() {
               : "border-border bg-surface hover:bg-surface-hover"
           }`}
         >
-          <p className="text-sm font-medium text-white">{a.title}</p>
+          <p className="text-sm font-medium text-foreground">{a.title}</p>
           <p className="text-xs text-muted mt-0.5">{a.description}</p>
           <div className="flex gap-4 mt-2">
             <div className="flex-1">

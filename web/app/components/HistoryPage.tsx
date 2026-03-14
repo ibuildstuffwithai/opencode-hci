@@ -49,7 +49,7 @@ function SessionCard({ session }: { session: SessionRecord }) {
         <div className="flex items-center gap-2">
           <span className="text-lg">{scenarioIcons[session.scenario] || "💻"}</span>
           <div>
-            <h3 className="text-sm font-semibold text-white group-hover:text-accent transition-colors">
+            <h3 className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors">
               {session.title}
             </h3>
             <p className="text-[10px] text-muted">{formatDate(session.timestamp)} • {formatDuration(session.duration)}</p>
@@ -112,7 +112,7 @@ function TrendChart({ sessions }: { sessions: SessionRecord[] }) {
 
   return (
     <div className="bg-surface border border-border rounded-xl p-4">
-      <h3 className="text-xs font-semibold text-white mb-3">📈 Pillar Score Trend</h3>
+      <h3 className="text-xs font-semibold text-foreground mb-3">📈 Pillar Score Trend</h3>
       <svg viewBox={`-2 -2 ${width + 4} ${height + 4}`} className="w-full h-16">
         <polyline
           points={points}
@@ -156,13 +156,13 @@ export function HistoryPage() {
       <header className="flex items-center gap-3 px-6 py-4 border-b border-border bg-surface">
         <button
           onClick={() => setView("landing")}
-          className="text-muted hover:text-white transition-colors text-sm"
+          className="text-muted hover:text-foreground transition-colors text-sm"
         >
           ← Back
         </button>
         <div className="w-px h-4 bg-border" />
         <div>
-          <h1 className="text-sm font-semibold text-white">📊 Session History</h1>
+          <h1 className="text-sm font-semibold text-foreground">📊 Session History</h1>
           <p className="text-[10px] text-muted">{sessions.length} sessions recorded</p>
         </div>
       </header>
@@ -176,11 +176,11 @@ export function HistoryPage() {
           {sessions.length === 0 ? (
             <div className="text-center py-16">
               <span className="text-4xl mb-4 block">📊</span>
-              <p className="text-lg font-semibold text-white mb-2">No sessions yet</p>
+              <p className="text-lg font-semibold text-foreground mb-2">No sessions yet</p>
               <p className="text-sm text-muted">Complete a coding session to see it here</p>
               <button
                 onClick={() => setView("workspace")}
-                className="mt-4 px-4 py-2 rounded-lg bg-accent text-white text-sm hover:bg-accent/90 transition-colors"
+                className="mt-4 px-4 py-2 rounded-lg bg-accent text-foreground text-sm hover:bg-accent/90 transition-colors"
               >
                 Start a Session
               </button>

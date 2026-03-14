@@ -92,20 +92,20 @@ export function ConfirmDialog({
             {style.icon}
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white">{title}</h3>
+            <h3 className="text-sm font-semibold text-foreground">{title}</h3>
             <p className="text-xs text-muted mt-1 leading-relaxed">{message}</p>
           </div>
         </div>
         <div className="flex gap-2 justify-end">
           <button
             onClick={handleClose}
-            className="px-4 py-2 text-xs text-muted hover:text-white bg-surface-hover rounded-lg transition-colors"
+            className="px-4 py-2 text-xs text-muted hover:text-foreground bg-surface-hover rounded-lg transition-colors"
           >
             {cancelLabel}
           </button>
           <button
             onClick={handleConfirm}
-            className={`px-4 py-2 text-xs text-white rounded-lg transition-colors ${style.confirmBg}`}
+            className={`px-4 py-2 text-xs text-foreground rounded-lg transition-colors ${style.confirmBg}`}
           >
             {confirmLabel}
           </button>

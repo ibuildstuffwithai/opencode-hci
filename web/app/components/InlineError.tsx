@@ -63,7 +63,7 @@ export function InlineError({ title, message, type = "generic", onRetry, onDismi
                     setDismissed(true);
                     onDismiss();
                   }}
-                  className="px-3 py-1.5 text-xs text-muted hover:text-white rounded-lg hover:bg-surface-hover transition-colors"
+                  className="px-3 py-1.5 text-xs text-muted hover:text-foreground rounded-lg hover:bg-surface-hover transition-colors"
                 >
                   Dismiss
                 </button>

@@ -72,7 +72,7 @@ export function PreviewPanel() {
       {/* Preview header */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-surface">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-white">Preview</span>
+          <span className="text-xs font-medium text-foreground">Preview</span>
           <div className="flex gap-1">
             <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
             <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
@@ -85,7 +85,7 @@ export function PreviewPanel() {
             value={previewUrl}
             onChange={(e) => setPreviewUrl(e.target.value)}
             placeholder="localhost:3000"
-            className="text-[10px] bg-[#0a0a0c] text-muted border border-border rounded px-2 py-0.5 w-32 outline-none focus:border-accent/30"
+            className="text-[10px] bg-background text-muted border border-border rounded px-2 py-0.5 w-32 outline-none focus:border-accent/30"
           />
           <button
             onClick={() => {
@@ -95,7 +95,7 @@ export function PreviewPanel() {
                 iframe.srcdoc = srcDoc;
               }
             }}
-            className="text-[10px] text-muted hover:text-white px-1.5 py-0.5 rounded hover:bg-surface-hover transition-colors"
+            className="text-[10px] text-muted hover:text-foreground px-1.5 py-0.5 rounded hover:bg-surface-hover transition-colors"
           >
             ↻
           </button>
@@ -113,7 +113,7 @@ export function PreviewPanel() {
             title="Live Preview"
           />
         ) : (
-          <div className="flex items-center justify-center h-full bg-[#0e0e10]">
+          <div className="flex items-center justify-center h-full bg-background">
             <div className="text-center animate-fade-in">
               <div className="relative inline-block mb-4">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/10 to-accent-purple/10 border border-accent/10 flex items-center justify-center">

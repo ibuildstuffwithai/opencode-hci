@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useStore } from "../store";
+import { useStore, FileNode } from "../store";
 import { exportSessionMarkdown } from "../mock-agent";
 import { SupportModal } from "./SupportModal";
 import { SaveProjectModal } from "./SaveProjectModal";
+import JSZip from "jszip";
 
 export function ControlBar() {
   const phase = useStore((s) => s.phase);
@@ -129,7 +130,7 @@ export function ControlBar() {
             onClick={() => setSpeed(n)}
             className={`w-5 h-5 rounded text-[10px] font-medium transition-colors ${
               speedLevel === n
-                ? "bg-accent text-white"
+                ? "bg-accent text-foreground"
                 : "bg-surface-hover text-muted"
             }`}
           >
@@ -146,7 +147,7 @@ export function ControlBar() {
             className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
               isPaused
                 ? "bg-yellow-500/20 text-yellow-400 shadow-lg shadow-yellow-500/10"
-                : "bg-surface-hover text-muted hover:text-white"
+                : "bg-surface-hover text-muted hover:text-foreground"
             }`}
           >
             {isPaused ? "▶ Resume" : "⏸ Pause"}
@@ -165,7 +166,7 @@ export function ControlBar() {
                 value={redirectMessage}
                 onChange={(e) => setRedirectMessage(e.target.value)}
                 placeholder="New direction..."
-                className="bg-surface border border-accent/30 rounded px-2 py-1 text-xs text-white placeholder:text-muted outline-none w-40"
+                className="bg-surface border border-accent/30 rounded px-2 py-1 text-xs text-foreground placeholder:text-muted outline-none w-40"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === "Escape") {
@@ -180,7 +181,7 @@ export function ControlBar() {
                     // The mock-agent checks for redirect in its pause loop
                   }
                 }}
-                className="px-2 py-1 rounded text-xs bg-accent text-white"
+                className="px-2 py-1 rounded text-xs bg-accent text-foreground"
               >
                 Go
               </button>
@@ -203,9 +204,33 @@ export function ControlBar() {
       {phase === "complete" && (
         <button
           onClick={handleExport}
-          className="px-2.5 py-1 rounded text-xs text-muted hover:text-white bg-surface-hover transition-colors"
+          className="px-2.5 py-1 rounded text-xs text-muted hover:text-foreground bg-surface-hover transition-colors"
         >
           📤 Export
+        </button>
+      )}
+
+      {/* Download ZIP */}
+      {files.length > 0 && (
+        <button
+          onClick={async () => {
+            const zip = new JSZip();
+            const allFiles = flattenFiles(files);
+            for (const f of allFiles) {
+              zip.file(f.path, f.content || "");
+            }
+            const blob = await zip.generateAsync({ type: "blob" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `opencode-project-${new Date().toISOString().slice(0, 10)}.zip`;
+            a.click();
+            URL.revokeObjectURL(url);
+            addToast("success", "ZIP Downloaded", `${allFiles.length} file${allFiles.length !== 1 ? "s" : ""} packaged`);
+          }}
+          className="px-2.5 py-1 rounded text-xs font-medium bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 hover:from-cyan-500/30 hover:to-blue-500/30 transition-all border border-cyan-500/30"
+        >
+          📦 ZIP
         </button>
       )}
 
@@ -238,7 +263,7 @@ export function ControlBar() {
       {/* Reset */}
       <button
         onClick={() => reset()}
-        className="px-2.5 py-1 rounded text-xs text-muted hover:text-white bg-surface-hover transition-colors"
+        className="px-2.5 py-1 rounded text-xs text-muted hover:text-foreground bg-surface-hover transition-colors"
       >
         Reset
       </button>
@@ -246,7 +271,7 @@ export function ControlBar() {
       {/* Home */}
       <button
         onClick={() => { reset(); setView("landing"); }}
-        className="px-2 py-1 rounded text-xs text-muted hover:text-white transition-colors"
+        className="px-2 py-1 rounded text-xs text-muted hover:text-foreground transition-colors"
       >
         🏠
       </button>
